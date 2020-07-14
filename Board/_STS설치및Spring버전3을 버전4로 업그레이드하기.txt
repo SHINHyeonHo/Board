@@ -1,0 +1,260 @@
+ == 스프링툴슈트 다운로드 사이트 ==
+ https://spring.io/tools
+
+ https://spring.io/tools3/sts/all
+
+
+ Eclipse Luna(Kepler) 버전 이전
+  - Maven도 추가로 설치
+
+ Eclipse Luna(Kepler) 버전 이후
+  - Maven이 이클립스에 내장
+  
+ 
+ - 스프링툴슈트(STS)를 다운받아서 실행시킨다.
+
+ Maven 세팅은 설치 경로만 확인할것(수정할 일 없음)
+ 1. 메뉴 Window > Preferences > Maven > User Settings > User Settings : Local Repository 경로(C:\Users\user1\.m2\repository : 메이븐이 다운로드 받은 라이브러리가 저장되는 폴더)
+
+ 2. 사이트
+
+   http://maven.apache.org : 메이븐 공식 사이트
+   http://search.maven.org : ***** 라이브러리 검색(자주 방문해서 사용할 일이 많은 사이트)
+   https://mvnrepository.com/ ***** 라이브러리 검색(자주 방문해서 사용할 일이 많은 사이트)
+   https://code.lds.org/nexus/#browse/search/maven : ***** 라이브러리 검색(자주 방문해서 사용할 일이 많은 사이트)
+                                                  오라클 ojdbc6.jar 다운로드는 여기서함.
+
+ 3. Ctrl + Shift + L : 찾기(검색) 기능 (== Ctrl + F)
+
+ 
+ 4. STS를 UTF-8 상태로 변경한다.(이전에 이클립스에서 한것과 동일함.)
+
+
+ 5. Spring 프로젝트 생성
+    - STS를 사용하여 프로젝트를 만드는 방법에 대해 살펴본다. 
+      STS는 Spring Framework 관련 프로젝트 템플릿이 몇 종류가 준비되어 있다. 
+      크게 나누면 "Spring Legacy Project"와"Spring Starter Project "로 분류가 가능하다. 
+      이것은 다음과 같은 차이가 있다.
+
+      ==> Spring Legacy Project : 일반적인 Spring Framework 프로젝트이다. 
+                                  필요에 따라 Spring Framework의 라이브러리를 내장하여 이용한다.
+
+      ==> Spring Starter Project : Spring Boot라는 응용 프로그램의 빠른 개발 프레임워크를 이용한 프로젝트이다. 
+                                   간단한 라이브러리를 추가하는 것만으로 필요한 프레임워크들이 모두 포함할 수 있도록 되어 있다.
+
+
+      Spring Framework의 기본을 배우는 것에는, "Spring Legacy Project"를 사용한다. 
+      Spring Starter Project는 Spring Boot위한 것이므로, 이것은 Spring Boot를 이용하게 될때 사용하는 것으로 하도록 하자.
+
+      메뉴 File ==> New ==> Spring Legacy Project ==> 프로젝트명 입력 : SpringBegin
+      ==> (아래에 내려가서) ==> Spring MVC Project 를 선택하고서 Next ==> download 16608 byte 대화상자(Yes) 
+      ==> 기본 패키지명 입력(3단계 이상 권장) ==> com.test.startspring ==> Finish 
+      처음에는 error 표시가 나지만 메이븐에서 .jar 파일을 다운받고 있는 중이므로 그냥 가만히 약 1~2분만 지나면 
+      다운이 다 이루어지므로 그때는 error 표시가 없어진다. 
+      그러므로 error 표시가 없어질때 까지 그냥 기다리자.
+
+
+ 6. WAS는 Pivotal tc Server Developer Edition v3.2 을 삭제하고 Tomcat v8.0 Server at localhost 를 설치한다.
+    서비스 상태는 stop 인 상태로 둔다.
+
+
+ 7. Spring MVC 프로젝트 버전3 에서 버전 4로 마이그레이션 하기
+
+  >>>> Spring MVC 프로젝트 버전3 에서 버전 4로 마이그레이션 하기 <<<<<
+
+  "Spring Framework을 사용한 웹애플리케이션 개발환경 만들기" 에서 
+  기본 설치했던 샘플 Spring MVC 프로젝트의 Spring Framework 버전은 3.1.1 이다. 
+  이것을 4.3.4 버전으로 변경한다. 
+ 
+
+  => 기본 환경
+
+  - Spring Framework 3.1.1
+  - java version 1.6
+  - Maven compiler
+    source 1.6
+    target 1.6
+  - servlet-api 2.5
+  - jsp-api 2.1
+
+ 
+
+  => 변경 될 환경
+
+  - Spring Framework 4.3.4
+  - java version 1.8
+  - Maven compiler
+    source 1.8
+    target 1.8
+  - servlet-api 3.1
+  - jsp-api 2.2
+
+
+ [8-1]. 프로젝트 아래에 보이는 pom.xml 파일을 열어서 설정을 변경한다.
+        - 이 pom.xml 파일은 메이븐 자체를 설정하는 것이 아니라 메이븐을 사용해서 프로젝트를 관리해주는 환경설정 파일이다.
+	- 메이븐을 통해서 각종 *.jar를 프로젝트에 다운로드 하는 것이 목적이다.
+	- 프로젝트를 운용하는데 필요한 각종  *.jar을 <dependency> 태그를 사용해서 추가한다.(pom.xml 참고)
+	- ojdbc.jar는 오라클 소송 문제 때문에 구글 코드로 전환한다.
+        - pom.xml 파일 수정시 에러가 발생하면 무조건 -> STS 종료를 종료하고서 
+          탐색기에 가서 C:\Users\user1\.m2\repository 내의 모든 폴더(파일)를 삭제하고서 STS 를 다시 실행하면 된다.
+
+  ===> pom.xml 파일을 열어서 설정을 아래처럼 변경한다.
+
+ [8-2]. java version을 1.6 에서 1.8 로 변경하고, springframework 버전을 3.1.1을 4.3.4 로 변경한다.
+
+  <properties>
+      <java-version>1.8</java-version>
+      <org.springframework-version>4.3.4.RELEASE</org.springframework-version>
+      <org.aspectj-version>1.6.10</org.aspectj-version>
+      <org.slf4j-version>1.6.6</org.slf4j-version>
+  </properties>
+
+
+  [8-3]. Servlet api 버전을 2.5 에서 3.1.0 로 변경한다.   
+         여기에서는 artifactId 도 servlet-api 에서 javax.servlet-api 로 변경한다.
+
+  <!-- Servlet -->
+  <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
+  </dependency>
+
+
+  [8-4]. jsp api 버전을 2.1에서 2.2로 변경한다.
+
+  <dependency>
+      <groupId>javax.servlet.jsp</groupId>
+      <artifactId>jsp-api</artifactId>
+      <version>2.2</version>
+      <scope>provided</scope>
+  </dependency>
+
+
+  [8-5]. maven-compiler-plugin 설정에서 소스와 타겟을 1.6 에서 ${java-version} 또는 1.8로 변경한다.
+
+  <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>2.5.1</version>   
+      <configuration>
+          <source>${java-version}</source>
+          <target>${java-version}</target>
+          <compilerArgument>-Xlint:all</compilerArgument>
+         <showWarnings>true</showWarnings>
+          <showDeprecation>true</showDeprecation>
+      </configuration>
+  </plugin>
+
+
+ [8-6]. pom.xml 파일을 저장한다.
+
+  9. 이제 프로젝트 설정을 수정하기 위해서 프로젝트 오른쪽 버튼 클릭해서 Properties 를 선택한다.
+
+ 10. Java Build Path 를 선택한후 Libraries 탭에서 JRE System Library[JavaSE-1.6] 에 클릭하여 Edit 버튼을 클릭하여
+      Workspace default JRE (jdk1.8.0_xxx)으로 변경한다.
+
+ 11. Java Compiler 설정에서 Compiler compliance level 을 1.8로 지정한다. 
+     Build Path 가 잘 설정되었다면 Compiler compliance level 이 1.8이 되어 있을 것이다.
+
+ 12. Project Facets에서 Dynamic Web Module 2.5를 3.1 으로 변경하고, java 1.6은 1.8로 변경한다. 
+     Apply and Close 버튼을 클릭하여 창을 닫는다.
+     만약에 설정변경이 안되는 경우가 있다라면... 
+     이 때는 STS를 종료한 후 프로젝트(SpringBegin) 폴더아래 .settings 폴더에 있는 
+     org.eclipse.wst.common.project.facet.core.xml 파일을 텍스트 에디터로 열어서 
+     직접 수정한 후 STS를 실행하고 다시 변경하면 된다.
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+ 13. >>>> 오류 Cannot change version of project facet Dynamic Web Module to 3.0. 이 발생할 수 있으므로 아래와 같이 하도록 한다 <<<<
+    
+   해결책 : /프로젝트명/src/main/webapp/WEB-INF/web.xml 파일에서 아래처럼 변경해야 한다.
+
+   <?xml version="1.0" encoding="UTF-8"?>
+   <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+        
+
+------------------------------------------------------------------------------------------------------------   
+
+ 14.  >>>> /webapp/WEB-INF/spring/root-context.xml 파일 수정하기 <<<<<
+
+  ==> 파일뒤에 숫자는 모두 제거한다. 숫자를 제거한 것이 최신파일인 것이다.
+  ==> 그리고 내용이 조금 바뀌었으므로 그대로 복사해서 사용하도록 한다.
+
+ <?xml version="1.0" encoding="UTF-8"?>
+ <beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd"> 
+
+------------------------------------------------------------------------------------------------------------
+
+ 15. >>>>  /webapp/WEB-INF/spring/appServlet/servlet-context.xml 파일 수정하기 <<<<<
+
+ ==> 파일뒤에 숫자는 모두 제거한다. 숫자를 제거한 것이 최신파일인 것이다.
+ ==> 그리고 내용이 조금 바뀌었으므로 그대로 복사해서 사용하도록 한다.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+ <annotation-driven /> 을
+ <mvc:annotation-driven /> 으로 변경한다.
+
+ <resources mapping="/resources/**" location="/resources/" /> 을
+ <mvc:resources mapping="/resources/**" location="/resources/" />  으로 변경한다.
+
+
+  16. 프로젝트명에 마우스 오른쪽 키를 누르고 팝업 메뉴에서 
+     Maven -> Update Project... 를 클릭해서 설정 내용을 적용한다. 
+     이것은 1번만 한 이후로는 할 필요가 없다.    
+     이제 모든 설정이 적용되었다. 
+     프로젝트명에 빨간색이 없고, 하단의  Problems 탭에 아무 내용도 없어야 한다. 
+     물론 실행시켜도 잘 동작해야 한다. 추가로 적용 도중에 다음과 같은 에러가 발생했었다.
+
+
+ >>>> 오류  
+ Description	Resource	Path	Location	Type
+ The container 'Maven Dependencies' references non existing library 'C:\Users\user1\.m2\repository\org\springframework\spring-context\4.3.4.RELEASE\spring-context-4.3.4.RELEASE.jar'	Board		Build path	Build Path Problem
+
+ https://mvnrepository.com/
+
+ jar 파일이 다운로드 되기는 했지만, 잘못된 파일이라는 내용이 나오더군요. 
+ 여기저기 찾아보니 여러가지 해결책이 있었지만, 
+ 나의 경우 해결할 수 있었던 방법은 STS를 종료하고, 
+ 탐색기에서 사용자 폴더 아래 maven 로컬 리포지토리 (C:\Users\user1\.m2\repository\ 안의 모든폴더)를 삭제하고,
+ STS를 다시 시작한 후 Maven -> Update Project 를 다시 실행하니 해결이 되었다.
+ 
+
+ 17. Tomcat v8.0 Server at localhost 를 start 시킨다.
+
+--------------------------------------------------------------------------------------------------------------
+
+ <Dynamic Web Project 구조>
+ 1. src
+	- 자바 리소스
+ 2. WebContent
+	- 웹 리소스
+	- 브라우저로 접근 가능 루트 디렉토리
+
+ <Spring MVC Project 구조>
+ 1. src
+	- 자바 리소스
+ 2. src > main > webapp
+	- 웹 리소스 루트 폴더(== WebContent)
+
+
+---------------------------------------------------------------------

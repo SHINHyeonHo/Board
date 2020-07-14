@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== #29. mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ==== #29. 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+<mapper namespace="remote_board">
+
+	<insert id="test_insert">
+		insert into spring_test1(no, name, writeday) 
+		values(101, '신현호', default)
+	</insert>
+	
+	<!-- 주의해야할 사항은 리턴타입이 List<E> 이더라도 resultType 은 E 으로 해야만 한다. -->
+	<select id="test_select" resultType="com.spring.model.TestVO">
+		select no, name, to_char(writeday, 'yyyy-mm-dd hh24:mi:ss') AS writeday
+		from spring_test1
+		order by writeday desc
+	</select>
+
+</mapper>

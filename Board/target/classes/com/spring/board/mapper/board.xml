@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== #29. mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ==== #29. 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+<mapper namespace="board">
+
+	<insert id="test_insert">
+		insert into spring_test1(no, name, writeday) 
+		values(101, '이순신', default)
+	</insert>
+	
+	<!-- 주의해야할 사항은 리턴타입이 List<E> 이더라도 resultType 은 E 으로 해야만 한다. -->
+	<select id="test_select" resultType="com.spring.model.TestVO">
+		select no, name, to_char(writeday, 'yyyy-mm-dd hh24:mi:ss') AS writeday
+		from spring_test1
+		order by writeday desc
+	</select>
+	
+	<select id="hr_select" resultType="com.spring.model.HrVO">
+		select employee_id, first_name || ' ' || last_name AS ename, salary, jubun
+		from employees
+	</select>
+	
+	<resultMap type="HashMap" id="employeesMap">
+		<result property="EMPLOYEE_ID" 	column="employee_id" 	javaType="String"/> <!-- property 가 HashMap 의 key 값이다. -->
+		<result property="ENAME" 		column="ename" 			javaType="String"/>
+		<result property="YEARPAY" 		column="yearpay" 		javaType="String"/>
+		<result property="GENDER" 		column="gender" 		javaType="String"/>
+		<result property="AGE" 			column="age" 			javaType="String"/>
+	</resultMap>
+	<select id="test_employees" resultMap="employeesMap">
+		select employee_id
+		     , first_name || ' ' || last_name AS ename
+		     , nvl(salary*12 + salary*commission_pct, salary*12) AS yearpay
+		     , case when substr(jubun, 7, 1) in('1', '3') then '남자' else '여' end AS gender
+		     , extract(year from sysdate) - ( case when substr(jubun, 7,1) in('1', '2') then 1900 else 2000 end + to_number(substr(jubun, 1, 2)) ) AS age
+		from employees
+	</select>
+	
+	<!-- #### 중요 ####
+		 HashMap 타입으로 매개변수를 받아온 것을 꺼내서 사용할때
+		 1. 데이터로 사용할때는 #{key명} 이고,
+		 2. 식별자(테이별명, 컬럼명)로 사용할때는 ${key명} 이고,
+		 3. myBatis 에서 제공하는 if 엘리먼트나 choose 엘리먼트 안에서 사용할때는
+		 	그냥 <if test="key명"> <when test="key명"> 으로 사용한다.
+	-->
+	<insert id="test_insertPm" parameterType="HashMap"> <!-- java.util.HashMap 에서 패키지는 뺄수 있다. -->
+		insert into spring_test1(no, name, writeday) 
+		values(#{no}, #{name}, default)
+	</insert>
+	
+	<insert id="ajaxtest_insert" parameterType="HashMap">
+		insert into spring_test1(no, name, writeday)
+		values(#{no}, #{name}, default)
+	</insert>
+	
+	<!-- ======================================= 게시판 ================================================================ -->
+	
+	<!-- === #39. 메인 페이지용 이미지 파일ㅇ르 가져오기 === -->
+	<select id="getImgfilenameList" resultType="String">
+		select imgfilename
+		from board_img_advertise
+		order by imgno desc
+	</select>
+	
+	<!-- === #47. 로그인 처리하기 === -->
+	<select id="getLoginMember" parameterType="HashMap" resultType="com.spring.member.model.MemberVO">
+		select idx, userid, name, email, gradelevel
+		     , trunc( months_between(sysdate, lastPwdChangeDate) ) AS pwdchangegap  
+			 , trunc( months_between(sysdate, lastLoginDate) ) AS lastlogindategap 
+		from mymvc_shopping_member 
+		where status = 1 and 
+			  userid = #{userid} and 
+			  pwd = #{pwd}
+	</select>
+	<update id="setLastLoginDate" parameterType="HashMap">
+		update mymvc_shopping_member set lastLoginDate = sysdate
+		where userid = #{userid}
+	</update>
+	
+	
+</mapper>
+
+
+
+
