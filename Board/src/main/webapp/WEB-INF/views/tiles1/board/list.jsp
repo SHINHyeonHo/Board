@@ -2,7 +2,9 @@
     pageEncoding="UTF-8"%>
     
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
-    
+
+<% String ctxPath = request.getContextPath(); %>
+
 <style type="text/css">
 	table, th, td {border: solid 1px gray;}
 
@@ -30,6 +32,10 @@
 		});
 		
 	 });// end of $(document).ready(function(){})-------------------
+	 
+	 function goView(seq) {
+		 location.href="<%=ctxPath%>/view.action?seq="+seq;
+	 } // end of function goView(seq) {}
  
 </script>
 	
@@ -48,7 +54,7 @@
 			<tr>
 				<td align="center">${boardvo.seq}</td>
 				<td align="left">
-					<span>${boardvo.subject}</span> 
+					<span class="subject" onclick="goView('${boardvo.seq}')">${boardvo.subject}</span> 
 				</td>
 				<td align="center">${boardvo.name}</td>
 				<td align="center">${boardvo.regDate}</td>

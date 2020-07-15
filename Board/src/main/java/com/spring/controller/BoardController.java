@@ -539,10 +539,40 @@ public class BoardController {
 		
 		return mav;
 	}
+	
+	
+	// === #58. 글 1개를 보여주는 페이지 요청 === //
+	@RequestMapping(value="/view.action")
+	public ModelAndView view(HttpServletRequest request, ModelAndView mav) {
+		
+		// 조회하고자 하는 글번호 받아오기
+		String seq = request.getParameter("seq");
+		
+		HttpSession session = request.getSession();
+		MemberVO loginuser = (MemberVO) session.getAttribute("loginuser");
+		// login을 안했으면 loginuser 은 null 값이다.
+		
+		String userid = null;
+		
+		if(loginuser != null) {
+			userid = loginuser.getUserid();
+		}
+		
+		BoardVO boardvo = null;
+		
+		boardvo = service.getView(seq, userid);
+		// 글조회수 증가와 함께 글1개를 조회해주는 것.
+		
+		return mav;
+	}
 
 }
 
 
+
+		
+		
+		
 
 
 

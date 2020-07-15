@@ -33,5 +33,9 @@ public interface InterBoardService {
 	int add(BoardVO boardvo); // 게시판 글쓰기(파일첨부가 없는 글쓰기)
 
 	List<BoardVO> boardListNoSearch(); // 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기
+
+	BoardVO getView(String seq, String userid); // 글조회수 증가와 함께 글1개를 조회해주는 것.
+												// 글조회수 증가는 다른 사람의 글을 읽을 때만 증가하도록 한다.
+												// 로그인 하지 않은 상태에서 즉, userid 가 null 값인 상태에서 글을 읽을때 조회수 증가는 일어나지 않도록 한다.
 	
 }

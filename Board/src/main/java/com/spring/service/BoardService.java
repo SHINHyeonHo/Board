@@ -147,5 +147,28 @@ public class BoardService implements InterBoardService {
 		List<BoardVO> boardList = dao.boardListNoSearch();
 		return boardList;
 	}
+
+	// === #63. 글1개 보여주기 === //
+	// (먼저, 로그인을 한 상태에서 다른 사람의 글을 조회할 경우에는 글조회수 컬럼 1증가 해야 한다.)
+	@Override
+	public BoardVO getView(String seq, String userid) {
+							// userid 는 로그인을 한 상태이라면 로그인한 사용자의 id 이고,
+							// 			로그인을 하지 않은 상태이라면 null 이다.
+		
+		BoardVO boardvo = dao.getView(seq);
+		
+		if(boardvo != null && 
+		   !boardvo.getFk_userid().equals(userid)) {
+			// 글조회수 증가는 다른 사람의 글을 읽을때만 증가하도록 해야한다.
+			// 로그인 하지 않은 상탱서는 글 조히수 증가는 없다.
+			
+			dao.setAddReadCount(seq); // 글 조회수 1증가 하기
+			
+			boardvo = dao.getView(seq);
+		}
+			
+		
+		return boardvo;
+	}
 	
 }

@@ -130,5 +130,18 @@ public class BoardDAO implements InterBoardDAO {
 		return boardList;
 	}
 
+	// === $64. 글 1개 보여주기 === //
+	@Override
+	public BoardVO getView(String seq) {
+		BoardVO boardvo = sqlsession.selectOne("board.getView", seq);
+		return boardvo;
+	}
+
+	// === $65. 글조회수 1 증가하기 === //
+	@Override
+	public void setAddReadCount(String seq) {
+		sqlsession.update("board.setAddReadCount", seq);
+	}
+
 	
 }

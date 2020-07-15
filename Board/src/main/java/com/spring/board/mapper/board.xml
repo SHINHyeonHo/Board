@@ -93,6 +93,8 @@
 		where status = 1
 		order by seq desc
    </select>
+   
+   <!-- === #66. (댓글쓰기가 없는 평범한 게시판에서) 글 1개 보여주기 === -->
 
 
 </mapper>

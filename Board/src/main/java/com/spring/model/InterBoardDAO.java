@@ -26,4 +26,7 @@ public interface InterBoardDAO {
 	void setLastLoginDate(HashMap<String, String> paraMap); // 마지막으로 로그인 한 날짜시간 변경(기록)하기
 	int add(BoardVO boardvo); // 글쓰기(파일첨부가 없는 글쓰기)
 	List<BoardVO> boardListNoSearch(); // 게시글 목록
+	BoardVO getView(String seq); // 1개 글 보여주기
+	void setAddReadCount(String seq); // 글조회수 증가
+	
 }
