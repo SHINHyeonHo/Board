@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.spring.board.model.BoardVO;
 import com.spring.common.AES256;
 import com.spring.member.model.MemberVO;
 import com.spring.model.HrVO;
@@ -129,6 +130,22 @@ public class BoardService implements InterBoardService {
 		}
 		
 		return loginuser;
+	}
+
+	// === #55. 글쓰기(파일첨부가 없는 글쓰기) === //
+	@Override
+	public int add(BoardVO boardvo) {
+		
+		int n = dao.add(boardvo);
+		
+		return n;
+	}
+
+	// == #59. 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 == //
+	@Override
+	public List<BoardVO> boardListNoSearch() {
+		List<BoardVO> boardList = dao.boardListNoSearch();
+		return boardList;
 	}
 	
 }

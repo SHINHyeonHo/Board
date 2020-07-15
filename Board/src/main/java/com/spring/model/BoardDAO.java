@@ -9,6 +9,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.spring.board.model.BoardVO;
 import com.spring.member.model.MemberVO;
 
 // === #32. DAO 선언 ===
@@ -113,6 +114,20 @@ public class BoardDAO implements InterBoardDAO {
 	@Override
 	public void setLastLoginDate(HashMap<String, String> paraMap) {
 		sqlsession.update("board.setLastLoginDate", paraMap);
+	}
+
+	// === #56. 글쓰기(파일첨부가 없는 글쓰기) === //
+	@Override
+	public int add(BoardVO boardvo) {
+		int n = sqlsession.insert("board.add", boardvo);
+		return n;
+	}
+
+	// == #60. 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 == //
+	@Override
+	public List<BoardVO> boardListNoSearch() {
+		List<BoardVO> boardList = sqlsession.selectList("board.boardListNoSearch");
+		return boardList;
 	}
 
 	

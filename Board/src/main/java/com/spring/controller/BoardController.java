@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.spring.board.model.BoardVO;
 import com.spring.common.Sha256;
 import com.spring.member.model.MemberVO;
 import com.spring.model.HrVO;
@@ -491,6 +492,51 @@ public class BoardController {
 		
 		mav.setViewName("board/add.tiles1");
 		//		/WEB-INF/views/tiles1/board/add.jsp 파일을 생성한다.
+		return mav;
+	}
+	
+	// === #54. 게시판 글쓰기 완료 요청 === //
+	@RequestMapping(value="/addEnd.action", method= {RequestMethod.POST})
+	public String addEnd(BoardVO boardvo) {
+		// form 태그의 name 명과  BoardVO 의  필드명이 같다라면
+		// request.getParameter("form 태그의 name명"); 을 사용하지 않더라도
+		// 자동적으로 BoardVO boardvo 에 set 되어진다.
+
+		/*
+ 		== 확인용 ==
+		System.out.println("1. " + boardvo.getFk_userid());
+		System.out.println("2. " + boardvo.getName());
+		System.out.println("3. " + boardvo.getSubject());
+		System.out.println("4. " + boardvo.getContent());
+		System.out.println("5. " + boardvo.getPw());
+		*/
+		
+		int n = service.add(boardvo);
+		
+		if(n == 1) {
+			return "redirect:/list.action";
+			//		/list.action 페이지로 redirect(페이지이동)하라는 말이다.
+		}
+		else {
+			return "redirect:/add.action";
+			//		/add.action 페이지로 redirect(페이지이동)하라는 말이다. 실패시에!!
+		}
+	}
+	
+	
+	// === #58. 글목록 보기 페이지 요청 === //
+	@RequestMapping(value="/list.action")
+	public ModelAndView list(ModelAndView mav) {
+		
+		List<BoardVO> boardList = null;
+		
+		// == 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 == //
+		boardList = service.boardListNoSearch();
+		
+		mav.addObject("boardList", boardList);
+		mav.setViewName("board/list.tiles1");
+		//		/WEB-INF/views/tiles1/board/list.jsp 파일을 생성한다.
+		
 		return mav;
 	}
 
