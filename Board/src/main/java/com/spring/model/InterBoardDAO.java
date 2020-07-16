@@ -28,5 +28,7 @@ public interface InterBoardDAO {
 	List<BoardVO> boardListNoSearch(); // 게시글 목록
 	BoardVO getView(String seq); // 1개 글 보여주기
 	void setAddReadCount(String seq); // 글조회수 증가
+	int updateBoard(BoardVO boardvo);
+	int deleteBoard(HashMap<String, String> paraMap); // 글 삭제
 	
 }

@@ -1,5 +1,7 @@
 package com.spring.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -488,7 +490,7 @@ public class BoardController {
 		
 	// === #51. 게시판 글쓰기 폼페이지 요청 === //
 	@RequestMapping(value="/add.action")
-	public ModelAndView add(ModelAndView mav) {
+	public ModelAndView requiredLogin_add(ModelAndView mav) {
 		
 		mav.setViewName("board/add.tiles1");
 		//		/WEB-INF/views/tiles1/board/add.jsp 파일을 생성한다.
@@ -526,12 +528,28 @@ public class BoardController {
 	
 	// === #58. 글목록 보기 페이지 요청 === //
 	@RequestMapping(value="/list.action")
-	public ModelAndView list(ModelAndView mav) {
+	public ModelAndView list(HttpServletRequest request, ModelAndView mav) {
 		
 		List<BoardVO> boardList = null;
 		
 		// == 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 == //
 		boardList = service.boardListNoSearch();
+		
+		//////////////////////////////////////////////////////////////////////////
+		// === #69. 글조회수(readCount)증가 (DML문 update)는
+		//          반드시 목록보기에 와서 해당 글제목을 클릭했을 경우에만 증가되고,
+		//          웹브라우저에서 새로고침(F5)을 했을 경우에는 증가가 되지 않도록 해야 한다.
+		//          이것을 하기 위해서는 session 을 사용하여 처리하면 된다.
+		
+		HttpSession session = request.getSession();
+		session.setAttribute("readCountPermission", "yes");
+		/*
+		   session 에  "readCountPermission" 키값으로 저장된 value값은 "yes" 이다.
+		   session 에  "readCountPermission" 키값에 해당하는 value값 "yes"를 얻으려면 
+		      반드시 웹브라우저에서 주소창에 "/list.action" 이라고 입력해야만 얻어올 수 있다. 
+		*/
+
+		//////////////////////////////////////////////////////////////////////////
 		
 		mav.addObject("boardList", boardList);
 		mav.setViewName("board/list.tiles1");
@@ -556,16 +574,161 @@ public class BoardController {
 		
 		if(loginuser != null) {
 			userid = loginuser.getUserid();
+			// userid 는 로그인 되어진 사용자의 userid 이다.
 		}
 		
+		// === #68. !!! 중요 !!! 
+		//	글1개를 보여주는 페이지 요청은 select 와 함께 
+		//  DML문(지금은 글조회수 증가인 update문)이 포함되어져 있다.
+		//  이럴경우 웹브라우저에서 페이지 새로고침(F5)을 했을때 DML문이 실행되어
+		//  매번 글조회수 증가가 발생한다.
+		//  그래서 우리는 웹브라우저에서 페이지 새로고침(F5)을 했을때는
+		//  단순히 select만 해주고 DML문(지금은 글조회수 증가인 update문)은 
+		//  실행하지 않도록 해주어야 한다. !!! === //
+
 		BoardVO boardvo = null;
 		
-		boardvo = service.getView(seq, userid);
-		// 글조회수 증가와 함께 글1개를 조회해주는 것.
+		// 위의 글목록보기 #69. 에서 session.setAttribute("readCountPermission", "yes"); 해두었다.
+		if("yes".equals(session.getAttribute("readCountPermission"))) {
+			// 글목록보기를 클릭한 다음에 특정글을 조회해온 경우이다.
+			
+			boardvo = service.getView(seq, userid);
+			// 글조회수 증가와 함께 글1개를 조회해주는 것.
+			
+			session.removeAttribute("readCountPermission");
+			// 중요함 !! session 에 저장된 readCountPermission 을 삭제한다.
+		}
+		else {
+			// 웹브라우저에서 새로고침(F5)을 클릭한 경우이다.
+			
+			boardvo = service.getViewWithNoAddCount(seq);
+			// 글조회수 증가는 없고 단순히 글 1개 조회만을 해주는 것이다.
+		}
+		
+		mav.addObject("boardvo", boardvo);
+		mav.setViewName("board/view.tiles1");
+		
+		return mav;
+	}
+	
+	
+	// === #71. 글 1개를 보여주는 페이지 요청 === //
+	@RequestMapping(value="/edit.action")
+	public ModelAndView requiredLogin_edit(HttpServletRequest request, ModelAndView mav) {
+		
+		// 글 수정해야할 글번호 가져오기
+		String seq = request.getParameter("seq");
+		
+		// 글 수정해야할 글 1개 내용 가져오기
+		BoardVO boardvo = service.getViewWithNoAddCount(seq);
+		// 글 조회수(readCount) 증가 없이 그냥 글 1개만 가져오는 것.
+		
+		HttpSession session = request.getSession();
+		MemberVO loginuser = (MemberVO) session.getAttribute("loginuser");
+		
+		if(!loginuser.getUserid().equals(boardvo.getFk_userid())) {
+			String msg = "다른 사용자의 글은 수정이 불가합니다.";
+			String loc = "javascript:history.back()";
+			
+			mav.addObject("msg", msg);
+			mav.addObject("loc", loc);
+
+			mav.setViewName("msg");
+		}
+		else { 
+			// 자신의 글을 수정할 경우
+			// 가져온 1개글을 글수정 할 폼이 있는 view 단으로 보내준다.
+			mav.addObject("boardvo", boardvo);
+			
+			mav.setViewName("board/edit.tiles1");
+		}
+		
+		return mav;
+	}
+	
+	@RequestMapping(value="/editEnd.action", method={RequestMethod.POST})
+	public ModelAndView editEnd(HttpServletRequest request, BoardVO boardvo, ModelAndView mav) {
+		
+		/*
+			글 수정을 하려면 원본글의 글암호와 수정시 입력해준 암호가 일치할때만 글 수정이 가능하도록 해야 한다.
+		*/
+		
+		int n = service.edit(boardvo);
+		
+		if(n == 0) {
+			mav.addObject("msg", "암호가 일치하지 않아 글을 수정할 수 없습니다.");
+		}
+		else {
+			mav.addObject("msg", "글수정 성공!!");
+		}
+		
+		mav.addObject("loc", request.getContextPath()+"/view.action?seq=" + boardvo.getSeq());
+		mav.setViewName("msg");
 		
 		return mav;
 	}
 
+	// === #76. 글삭제 페이지 요청 === //
+	@RequestMapping(value="/del.action")
+	public ModelAndView requiredLogin_del(HttpServletRequest request, ModelAndView mav) {
+		
+		// 글 삭제해야할 글번호 가져오기
+		String seq = request.getParameter("seq");
+		
+		// 삭제해야할 글 1개 내용 가져와서 로그인한 사람이 쓴 글이라면 글삭제가 가능하지만 
+		// 다른 사람이 쓴 글은 삭제가 불가하도록 해야 한다.
+		BoardVO boardvo = service.getViewWithNoAddCount(seq);
+		// 글조회수(readCount) 증가없이 그냥 글 1개만 가져오는 것
+		
+		HttpSession session = request.getSession();
+		MemberVO loginuser = (MemberVO) session.getAttribute("loginuser");
+		
+		if(!loginuser.getUserid().equals(boardvo.getFk_userid())) {
+			String msg = "다른 사용자의 글은 삭제가 불가합니다.";
+			String loc = "javascript:history.back()";
+			
+			mav.addObject("msg", msg);
+			mav.addObject("loc", loc);
+			mav.setViewName("msg");
+		}
+		else { 
+			// 자신의 글을 삭제할 경우
+			// 글작성시 입력해준 암호와 일치하는지 여부를 알아오도록 암호를 입력받아주는 del.jsp 를 띄운다.
+			mav.addObject("seq", seq);
+			mav.setViewName("board/del.tiles1");
+		}
+		
+		return mav;
+	}
+	
+	// === #77. 글삭제 페이지 완료하기 === //
+	@RequestMapping(value="/delEnd.action")
+	public ModelAndView delEnd(HttpServletRequest request, ModelAndView mav) {
+
+		/*	글 삭제를 하려면 원본글의 글암호와 삭제시 입력해준 암호가 일치할때만 글삭제가 가능하도록 해야한다. */
+		String seq = request.getParameter("seq");
+		String pw = request.getParameter("pw");
+		
+		HashMap<String, String> paraMap = new HashMap<>();
+		paraMap.put("seq", seq);
+		paraMap.put("pw", pw);
+		
+		int n = service.del(paraMap);
+		
+		if(n == 0) {
+			mav.addObject("msg", "글암호가 일치하지 않습니다.");
+			mav.addObject("loc", request.getContextPath()+"/view.action?seq=" + seq);
+		}
+		else {
+			mav.addObject("msg", "글삭제 성공!!");
+			mav.addObject("loc", request.getContextPath()+"/list.action");
+		}
+		
+		mav.setViewName("msg");
+		
+		return mav;
+	}
+	
 }
 
 

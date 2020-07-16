@@ -158,17 +158,40 @@ public class BoardService implements InterBoardService {
 		BoardVO boardvo = dao.getView(seq);
 		
 		if(boardvo != null && 
+		   userid != null &&
 		   !boardvo.getFk_userid().equals(userid)) {
 			// 글조회수 증가는 다른 사람의 글을 읽을때만 증가하도록 해야한다.
 			// 로그인 하지 않은 상탱서는 글 조히수 증가는 없다.
 			
 			dao.setAddReadCount(seq); // 글 조회수 1증가 하기
-			
 			boardvo = dao.getView(seq);
 		}
 			
 		
 		return boardvo;
+	}
+
+	// 글조회수 증가는 없고 단순히 글 1개 조회만을 해주는 것이다.
+	@Override
+	public BoardVO getViewWithNoAddCount(String seq) {
+		BoardVO boardvo = dao.getView(seq);
+		return boardvo;
+	}
+
+	// === #73. 1개글 수정하기 === //
+	@Override
+	public int edit(BoardVO boardvo) {
+		
+		int n = dao.updateBoard(boardvo);
+		
+		return n;
+	}
+
+	// 글 삭제
+	@Override
+	public int del(HashMap<String,String> paraMap) {
+		int n = dao.deleteBoard(paraMap);
+		return n;
 	}
 	
 }

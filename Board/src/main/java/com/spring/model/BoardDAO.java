@@ -143,5 +143,19 @@ public class BoardDAO implements InterBoardDAO {
 		sqlsession.update("board.setAddReadCount", seq);
 	}
 
+	@Override
+	public int updateBoard(BoardVO boardvo) {
+		
+		int n = sqlsession.update("board.updateBoard", boardvo);
+		
+		return n;
+	}
+
+	@Override
+	public int deleteBoard(HashMap<String, String> paraMap) {
+		int n = sqlsession.update("board.deleteBoard", paraMap);
+		return n;
+	}
+
 	
 }

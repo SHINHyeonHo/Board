@@ -117,4 +117,22 @@ select *
 from tblBoard
 order by seq desc;
 
+------------------------------------------------   07 . 16   -------------------------------------------------------------------
+---- *** 게시판에서 이전글보기, 다음글보기 를 작성하고자 할때 사용하는 것이다. *** ---
+           ---- *** lag() , lead() *** ---
+  
+  -- lag  ==> 어떤행의 바로앞의 몇번째 행을 가리키는 것.
+  -- lead ==> 어떤행의 바로뒤의 몇번째 행을 가리키는 것.
+  
+  select lag(first_name || ' ' || last_name) over(order by salary desc)  
+       , lag(salary) over(order by salary desc) 
+       
+       , employee_id
+       , first_name || ' ' || last_name AS ENAME
+       , salary
+       
+       , lead(first_name || ' ' || last_name) over(order by salary desc) 
+       , lead(salary) over(order by salary desc) 
+  from employees;
+
 
