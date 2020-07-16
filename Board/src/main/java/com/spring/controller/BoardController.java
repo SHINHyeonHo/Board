@@ -638,6 +638,7 @@ public class BoardController {
 		else { 
 			// 자신의 글을 수정할 경우
 			// 가져온 1개글을 글수정 할 폼이 있는 view 단으로 보내준다.
+			// 가져온 1개글을 글수정 할 폼이 있는 view 단으로 보내준다.
 			mav.addObject("boardvo", boardvo);
 			
 			mav.setViewName("board/edit.tiles1");
