@@ -56,7 +56,7 @@
 			success:function(json){
 				if(json.n == 1) {
 					goReadComment(); // 댓글 읽어오기 
-				}
+				} 
 				else {
 					alert("댓글쓰기 실패!!");
 				}
@@ -68,7 +68,7 @@
 			}
 		});
 		
-	}// end of function goAddWrite()----------------------
+	}// end of function goAddWrite()------------------
 	
 	
 	// === 댓글 읽어오기  === //
