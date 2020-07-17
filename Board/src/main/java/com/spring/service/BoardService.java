@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.spring.board.model.BoardVO;
+import com.spring.board.model.CommentVO;
 import com.spring.common.AES256;
 import com.spring.member.model.MemberVO;
 import com.spring.model.HrVO;
@@ -192,6 +193,35 @@ public class BoardService implements InterBoardService {
 	public int del(HashMap<String,String> paraMap) {
 		int n = dao.deleteBoard(paraMap);
 		return n;
+	}
+
+	// AOP 에서 사용하는 것으로 회원에게 포인트 증가를 하기 위한 것이다.
+	@Override
+	public void pointPlus(HashMap<String, String> paraMap) {
+		dao.pointPlus(paraMap);
+	}
+
+	// === #85. 댓글쓰기 ===
+	@Override
+	public int addComment(CommentVO commentvo) {
+		
+		int result = 0;
+		int n = 0;
+		
+		n = dao.addComment(commentvo); // 댓글쓰기(tblComment 테이블에 insert) 
+		if(n==1) {
+			result = dao.updateCommentCount(commentvo.getParentSeq()); // tblBoard 테이블에 commentCount 컬럼의 값을 1증가(update) 
+		}
+		
+		return result;
+	}
+
+
+	// === #91. 원게시물에 딸린 댓글 보여주기 === // 
+	@Override
+	public List<CommentVO> getCommentList(String parentSeq) {
+		List<CommentVO> commentList = dao.getCommentList(parentSeq);
+		return commentList;
 	}
 	
 }

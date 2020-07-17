@@ -122,16 +122,44 @@
 		where seq = #{seq}
 	</update>
 	
+	<!--  === #75. 1개글 수정하기 == -->
 	<update id="updateBoard" parameterType="com.spring.board.model.BoardVO">
 		update tblBoard set subject = #{subject}
 						  , content = #{content}
 		where seq = #{seq} and pw = #{pw}
 	</update>
 	
+	<!--  === #80. 1개글 삭제하기 == -->
 	<update id="deleteBoard" parameterType="Hashmap">
 		update tblBoard set status = 0
 		where seq = #{seq} and pw = #{pw}
 	</update>
+	
+	<!-- === AOP 에서 사용하는 것으로 회원에게 포인트 증가를 하기 위한것. -->
+	<update id="pointPlus" parameterType="Hashmap">
+		update mymvc_shopping_member set point = point + to_number(#{pointPlus}) 
+		where userid = #{userid} 
+	</update>
+	
+	<!--  === #88. 댓글쓰기(tblComment 테이블에 insert) === -->
+	 <insert id="addComment" parameterType="com.spring.board.model.CommentVO">
+    	insert into tblComment(seq, fk_userid, name, content, regDate, parentSeq, status)
+        values(commentSeq.nextval, #{fk_userid}, #{name}, #{content}, default, #{parentSeq}, default)
+    </insert>
+	 
+	<!--  === #89. tblBoard 테이블에 commentCount 컬럼의 값을 1증가(update) === -->  
+	<update id="updateCommentCount" parameterType="String">
+    	update tblBoard set commentCount = commentCount + 1 
+    	where seq = #{parentSeq}
+    </update>
+        
+    <!-- === #93. 원게시물에 딸린 댓글 보여주기 === -->
+    <select id="getCommentList" parameterType="String" resultType="com.spring.board.model.CommentVO"> 
+     	select name, content, to_char(regDate, 'yyyy-mm-dd hh24:mi:ss') as regDate 
+     	from tblComment
+     	where parentSeq = #{parentSeq}
+     	order by seq desc
+     </select>
 
 </mapper>
 

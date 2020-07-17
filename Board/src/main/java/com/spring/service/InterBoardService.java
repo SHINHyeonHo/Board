@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.spring.board.model.BoardVO;
+import com.spring.board.model.CommentVO;
 import com.spring.member.model.MemberVO;
 import com.spring.model.HrVO;
 import com.spring.model.TestVO;
@@ -43,6 +44,14 @@ public interface InterBoardService {
 	int edit(BoardVO boardvo); // 1개글 수정하기
 
 	int del(HashMap<String, String> paraMap); // 글 삭제
+
+	void pointPlus(HashMap<String, String> paraMap); // AOP 에서 사용하는 것으로 회원에게 포인트 증가를 하기 위한 것이다.
+
+	int addComment(CommentVO commentvo); // 댓글쓰기 
+
+	List<CommentVO> getCommentList(String parentSeq); // 원게시물에 딸린 댓글들을 조회해오는 것
+
+
 	
 
 	

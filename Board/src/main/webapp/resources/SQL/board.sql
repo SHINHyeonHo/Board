@@ -124,15 +124,31 @@ order by seq desc;
   -- lag  ==> 어떤행의 바로앞의 몇번째 행을 가리키는 것.
   -- lead ==> 어떤행의 바로뒤의 몇번째 행을 가리키는 것.
   
-  select lag(first_name || ' ' || last_name) over(order by salary desc)  
-       , lag(salary) over(order by salary desc) 
-       
-       , employee_id
-       , first_name || ' ' || last_name AS ENAME
-       , salary
-       
-       , lead(first_name || ' ' || last_name) over(order by salary desc) 
-       , lead(salary) over(order by salary desc) 
-  from employees;
+select previousseq, previoussubject
+     , seq, fk_userid, name, subject, content, readCount, regDate
+     , nextseq, nextsubject
+from
+(
+select lag(seq, 1) over(order by seq desc) as previousseq -- lag(seq) 라고만 쓰면 default 는 ,1 이다.
+     , lag(subject, 1) over(order by seq desc) as previoussubject
+     
+     , seq, fk_userid, name, subject, content, readCount
+     , to_char(regDate, 'yyyy-mm-dd hh24:mi:ss') as regDate
+     
+     , lead(seq, 1) over(order by seq desc) as nextseq
+     , lead(subject, 1) over(order by seq desc) as nextsubject 
+from tblBoard
+where status = 1
+) V
+where seq = 2;
 
+update tblBoard set subject = '새로운 글제목', content='새로운 글내용'
+where seq = 2 and pw = '2345';
+-- 0개 행 이(가) 업데이트되었습니다.
+
+update tblBoard set subject = '새로운 글제목', content='새로운 글내용'
+where seq = 2 and pw = '1234';
+-- 1개 행 이(가) 업데이트되었습니다.
+
+rollback;
 

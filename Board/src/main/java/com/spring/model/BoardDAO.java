@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.spring.board.model.BoardVO;
+import com.spring.board.model.CommentVO;
 import com.spring.member.model.MemberVO;
 
 // === #32. DAO 선언 ===
@@ -155,6 +156,33 @@ public class BoardDAO implements InterBoardDAO {
 	public int deleteBoard(HashMap<String, String> paraMap) {
 		int n = sqlsession.update("board.deleteBoard", paraMap);
 		return n;
+	}
+
+	// AOP 에서 사용하는 것으로 회원에게 포인트 증가를 하기 위한 것이다.
+	@Override
+	public void pointPlus(HashMap<String, String> paraMap) {
+		sqlsession.update("board.pointPlus", paraMap);
+	}
+
+	// === #86. 댓글쓰기(tblComment 테이블에 insert) === 
+	@Override
+	public int addComment(CommentVO commentvo) {
+		int n = sqlsession.insert("board.addComment", commentvo);
+		return n;
+	}
+
+	// === #87. tblBoard 테이블에 commentCount 컬럼의 값을 1증가(update) === 
+	@Override
+	public int updateCommentCount(String parentSeq) {
+		int n = sqlsession.update("board.updateCommentCount", parentSeq);
+		return n;
+	}
+
+	// === #92. 원게시물에 딸린 댓글 보여주기 === // 
+	@Override
+	public List<CommentVO> getCommentList(String parentSeq) {
+		List<CommentVO> commentList = sqlsession.selectList("board.getCommentList", parentSeq);
+		return commentList;
 	}
 
 	
