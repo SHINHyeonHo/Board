@@ -14,7 +14,10 @@ public class BoardVO {
    private String readCount;    // 글조회수
    private String regDate;      // 글쓴시간
    private String status;       // 글삭제여부   1:사용가능한 글,  0:삭제된글 
+   private String commentCount; // 댓글수
    
+  
+
    private String previousseq;      // 이전글번호
    private String previoussubject;  // 이전글제목
    private String nextseq;          // 다음글번호
@@ -22,26 +25,28 @@ public class BoardVO {
    
    public BoardVO() {}
    
-   public BoardVO(String seq, String fk_userid, String name, String subject, String content, String pw,
-         String readCount, String regDate, String status, String previousseq, String previoussubject, String nextseq,
-         String nextsubject) {
-      this.seq = seq;
-      this.fk_userid = fk_userid;
-      this.name = name;
-      this.subject = subject;
-      this.content = content;
-      this.pw = pw;
-      this.readCount = readCount;
-      this.regDate = regDate;
-      this.status = status;
-      this.previousseq = previousseq;
-      this.previoussubject = previoussubject;
-      this.nextseq = nextseq;
-      this.nextsubject = nextsubject;
-   }
-   
+   public BoardVO(String seq, String fk_userid, String name, String subject, String content, String pw, String readCount,
+		String regDate, String status, String commentCount, String previousseq, String previoussubject, String nextseq,
+		String nextsubject) {
+	super();
+	this.seq = seq;
+	this.fk_userid = fk_userid;
+	this.name = name;
+	this.subject = subject;
+	this.content = content;
+	this.pw = pw;
+	this.readCount = readCount;
+	this.regDate = regDate;
+	this.status = status;
+	this.commentCount = commentCount;
+	this.previousseq = previousseq;
+	this.previoussubject = previoussubject;
+	this.nextseq = nextseq;
+	this.nextsubject = nextsubject;
+}
 
-   public String getSeq() {
+
+public String getSeq() {
       return seq;
    }
 
@@ -145,7 +150,13 @@ public class BoardVO {
       this.nextsubject = nextsubject;
    }
 
-   
+   public String getCommentCount() {
+	   return commentCount;
+   }
+
+   public void setCommentCount(String commentCount) {
+		this.commentCount = commentCount;
+   }
    
    
    

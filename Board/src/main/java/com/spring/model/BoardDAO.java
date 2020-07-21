@@ -185,5 +185,25 @@ public class BoardDAO implements InterBoardDAO {
 		return commentList;
 	}
 
+	// === #97. 딸린 댓글을 삭제한다.(딸린 댓글이 없을수도 있지만 실행한다.)
+	@Override
+	public void deleteComment(HashMap<String, String> paraMap) {
+		sqlsession.update("board.deleteComment", paraMap);
+	}
+
+	// 검색한 List
+	@Override
+	public List<BoardVO> boardListSearch(HashMap<String, String> paraMap) {
+		List<BoardVO> boardList = sqlsession.selectList("board.boardListSearch", paraMap);
+		return boardList;
+	}
+
+	// === #108. 검색어 입력시 자동글 완성하기 5 ===
+	@Override
+	public List<String> wordSearchShow(HashMap<String, String> paraMap) {
+		List<String> wordList = sqlsession.selectList("board.wordSearchShow", paraMap);
+		return wordList;
+	}
+
 	
 }

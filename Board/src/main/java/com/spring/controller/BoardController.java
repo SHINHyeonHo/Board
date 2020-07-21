@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -633,29 +634,63 @@ public class BoardController {
 	   @ResponseBody
 	   @RequestMapping(value="/addComment.action", method= {RequestMethod.POST})      
 	   public String pointPlus_addComment(HashMap<String, String> paraMap, CommentVO commentvo) {
+
+		   String jsonStr = "";
 		   
-		   paraMap.put("userid", commentvo.getFk_userid());
-		   // === after Advice용 (댓글을 작성하면 포인트 50 을 주기위해서 글쓴이가 누구인지 알아온다.) === 
+		   try {
+			   paraMap.put("userid", commentvo.getFk_userid());
+			   // === after Advice용 (댓글을 작성하면 포인트 50 을 주기위해서 글쓴이가 누구인지 알아온다.) === 
 		   
-		   int n = service.addComment(commentvo);
-		   // 댓글쓰기(insert) 및 
-		   // 원게시물(tblBoard 테이블)에 댓글의 갯수 증가(update 1씩 증가)하기  
-		
-		   if(n==1) {
-			   paraMap.put("pointPlus", "50");
-			   // === after Advice용 (댓글을 작성하면 포인트 50 을 준다.) === 
+			   int n= service.addComment(commentvo);
+			   // 댓글쓰기(insert) 및 
+			   // 원게시물(tblBoard 테이블)에 댓글의 갯수 증가(update 1씩 증가)하기  
+			
+			   if(n==1) {
+				   paraMap.put("pointPlus", "50");
+				   // === after Advice용 (댓글을 작성하면 포인트 50 을 준다.) === 
+			   }
+			   else {
+				   paraMap.put("pointPlus", "0");
+					// === after Advice용 (댓글을 작성이 실패되면 포인트 0 을 준다.) === 
+			   }
+			   
+			   JSONObject jsonObj = new JSONObject();
+			   jsonObj.put("n", n);
+			   
+			   jsonStr = jsonObj.toString();
+		   
+		   } catch (Throwable e) {
+				e.printStackTrace();
 		   }
-		   else {
-			   paraMap.put("pointPlus", "0");
-				// === after Advice용 (댓글을 작성이 실패되면 포인트 0 을 준다.) === 
-		   }
 		   
-		   JSONObject jsonObj = new JSONObject();
-		   jsonObj.put("n", n);
-		   
-		   return jsonObj.toString();
+		   return jsonStr;
 	   }
 	   
+	   
+	   /*
+		    @ExceptionHandler 에 대해서.....
+		    ==> 어떤 컨트롤러내에서 발생하는 익셉션이 있을시 익셉션 처리를 해주려고 한다면
+		        @ExceptionHandler 어노테이션을 적용한 메소드를 구현해주면 된다
+		         
+		       컨트롤러내에서 @ExceptionHandler 어노테이션을 적용한 메소드가 존재하면, 
+		       스프링은 익셉션 발생시 @ExceptionHandler 어노테이션을 적용한 메소드가 처리해준다.
+	       	따라서, 컨트롤러에 발생한 익셉션을 직접 처리하고 싶다면 @ExceptionHandler 어노테이션을 적용한 메소드를 구현해주면 된다.
+	   
+	   @ExceptionHandler(java.sql.SQLSyntaxErrorException.class)
+	   public String handleSQLException(java.sql.SQLSyntaxErrorException e, HttpServletRequest request) {
+		   
+		   System.out.println("BoardController 오류코드 : " + e.getErrorCode());
+		   // BoardController 오류코드 : 904
+
+		   String msg = "SQL구문 오류가 발생했습니다.\n 오류코드번호 : " + e.getErrorCode();
+		   String loc = "javascript:history.back()";
+		   
+		   request.setAttribute("msg", msg);
+		   request.setAttribute("loc", loc);
+		   
+		   return "msg";
+	   }
+	   */
 	   
 	   // === #90. 원게시물에 딸린 댓글들을 조회해오기(Ajax 로 처리) ===
 	   @ResponseBody
@@ -777,29 +812,104 @@ public class BoardController {
 	@RequestMapping(value="/delEnd.action")
 	public ModelAndView delEnd(HttpServletRequest request, ModelAndView mav) {
 
-		/*	글 삭제를 하려면 원본글의 글암호와 삭제시 입력해준 암호가 일치할때만 글삭제가 가능하도록 해야한다. */
-		String seq = request.getParameter("seq");
-		String pw = request.getParameter("pw");
+		try {
+			/*	글 삭제를 하려면 원본글의 글암호와 삭제시 입력해준 암호가 일치할때만 글삭제가 가능하도록 해야한다. */
+			String seq = request.getParameter("seq");
+			String pw = request.getParameter("pw");
+			
+			HashMap<String, String> paraMap = new HashMap<>();
+			paraMap.put("seq", seq);
+			paraMap.put("pw", pw);
+			
+			int n = service.del(paraMap);
+			
+			if(n == 0) {
+				mav.addObject("msg", "글암호가 일치하지 않습니다.");
+				mav.addObject("loc", request.getContextPath()+"/view.action?seq=" + seq);
+			}
+			else {
+				mav.addObject("msg", "글삭제 성공!!");
+				mav.addObject("loc", request.getContextPath()+"/list.action");
+			}
+			
+			mav.setViewName("msg");
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return mav;
+	}
+	
+	
+	// 검색한 List
+	@RequestMapping(value="/search.action")
+	public ModelAndView searchList(HttpServletRequest request, ModelAndView mav) {
+		
+		String searchType = request.getParameter("searchType");
+		String searchWord = request.getParameter("searchWord");
+		
+		System.out.println("BoardController searchType, searchWord : " + searchType + ", "+ searchWord);
 		
 		HashMap<String, String> paraMap = new HashMap<>();
-		paraMap.put("seq", seq);
-		paraMap.put("pw", pw);
 		
-		int n = service.del(paraMap);
+		paraMap.put("searchType", searchType);
+		paraMap.put("searchWord", searchWord);
 		
-		if(n == 0) {
-			mav.addObject("msg", "글암호가 일치하지 않습니다.");
-			mav.addObject("loc", request.getContextPath()+"/view.action?seq=" + seq);
-		}
-		else {
-			mav.addObject("msg", "글삭제 성공!!");
-			mav.addObject("loc", request.getContextPath()+"/list.action");
-		}
+		List<BoardVO> boardList = null;
 		
-		mav.setViewName("msg");
+		boardList = service.boardListSearch(paraMap);
+		
+		HttpSession session = request.getSession();
+		session.setAttribute("readCountPermission", "yes");
+		
+		mav.addObject("boardList", boardList);
+		mav.setViewName("board/list.tiles1");
 		
 		return mav;
 	}
+	
+	// === #106. 검색어 입력시 검색자동완성 하기 3 ===
+	@ResponseBody
+	@RequestMapping(value="/wordSearchShow.action", produces="text/plain;charset=UTF-8")
+	public String wordSearchShow(HttpServletRequest request) {
+		
+		String searchType = request.getParameter("searchType");
+		String searchWord = request.getParameter("searchWord");
+		
+		HashMap<String, String> paraMap = new HashMap<>();
+		paraMap.put("searchType", searchType);
+		paraMap.put("searchWord", searchWord);
+		
+		List<String> wordList = service.wordSearchShow(paraMap);
+		
+		JSONArray jsonArr = new JSONArray();
+		
+		if(wordList != null) {
+			for(String word : wordList) {
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("word", word);
+				jsonArr.put(jsonObj);
+			}
+		}
+		
+		return jsonArr.toString();
+	}
+	
+	// == 스프링 스케줄러 연습하기 == //
+    // 여기서는 스프링 스케줄러 연습이므로 alert 를 창 띄우는 것으로 끝내지만 
+    // WAS에서 작업해야할 대량 메일발송 또는 대량 문자발송이라든지 
+    // 또는 DB에 접속하여 DB와 관련된 업무처리를 하도록 서비스업무를 호출하도록 하면 된다.
+    @RequestMapping(value="/alarmTest.action", method= {RequestMethod.GET}) 
+    public ModelAndView alertTest(HttpServletRequest request, ModelAndView mav) {
+	   	   
+    	String msg = "수고하셨습니다. 즐거운 점심시간입니다.";
+    	String loc = request.getContextPath()+"/index.action";
+	   
+	    mav.addObject("msg", msg);
+	    mav.addObject("loc", loc);
+	    mav.setViewName("msg");
+ 	   
+	    return mav;
+    }
 	
 }
 

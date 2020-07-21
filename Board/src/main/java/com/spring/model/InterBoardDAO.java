@@ -36,5 +36,8 @@ public interface InterBoardDAO {
 	int updateCommentCount(String parentSeq); // tblBoard 테이블에 commentCount 컬럼의 값을 1증가(update)
 	
 	List<CommentVO> getCommentList(String parentSeq); // 원게시물에 딸린 댓글들을 조회해오는 것
+	void deleteComment(HashMap<String, String> paraMap); // 딸린 댓글을 삭제한다.(딸린 댓글이 없을수도 있지만 실행한다.)
+	List<BoardVO> boardListSearch(HashMap<String, String> paraMap); // 검색한 List
+	List<String> wordSearchShow(HashMap<String, String> paraMap); // 검색어 입력시 자동글 완성하기 
 	
 }
