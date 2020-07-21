@@ -9,6 +9,8 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.spring.board.model.BoardVO;
+import com.spring.board.model.CommentVO;
 import com.spring.member.model.MemberVO;
 
 // === #32. DAO 선언 ===
@@ -113,6 +115,94 @@ public class BoardDAO implements InterBoardDAO {
 	@Override
 	public void setLastLoginDate(HashMap<String, String> paraMap) {
 		sqlsession.update("board.setLastLoginDate", paraMap);
+	}
+
+	// === #56. 글쓰기(파일첨부가 없는 글쓰기) === //
+	@Override
+	public int add(BoardVO boardvo) {
+		int n = sqlsession.insert("board.add", boardvo);
+		return n;
+	}
+
+	// == #60. 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 == //
+	@Override
+	public List<BoardVO> boardListNoSearch() {
+		List<BoardVO> boardList = sqlsession.selectList("board.boardListNoSearch");
+		return boardList;
+	}
+
+	// === $64. 글 1개 보여주기 === //
+	@Override
+	public BoardVO getView(String seq) {
+		BoardVO boardvo = sqlsession.selectOne("board.getView", seq);
+		return boardvo;
+	}
+
+	// === $65. 글조회수 1 증가하기 === //
+	@Override
+	public void setAddReadCount(String seq) {
+		sqlsession.update("board.setAddReadCount", seq);
+	}
+
+	@Override
+	public int updateBoard(BoardVO boardvo) {
+		
+		int n = sqlsession.update("board.updateBoard", boardvo);
+		
+		return n;
+	}
+
+	@Override
+	public int deleteBoard(HashMap<String, String> paraMap) {
+		int n = sqlsession.update("board.deleteBoard", paraMap);
+		return n;
+	}
+
+	// AOP 에서 사용하는 것으로 회원에게 포인트 증가를 하기 위한 것이다.
+	@Override
+	public void pointPlus(HashMap<String, String> paraMap) {
+		sqlsession.update("board.pointPlus", paraMap);
+	}
+
+	// === #86. 댓글쓰기(tblComment 테이블에 insert) === 
+	@Override
+	public int addComment(CommentVO commentvo) {
+		int n = sqlsession.insert("board.addComment", commentvo);
+		return n;
+	}
+
+	// === #87. tblBoard 테이블에 commentCount 컬럼의 값을 1증가(update) === 
+	@Override
+	public int updateCommentCount(String parentSeq) {
+		int n = sqlsession.update("board.updateCommentCount", parentSeq);
+		return n;
+	}
+
+	// === #92. 원게시물에 딸린 댓글 보여주기 === // 
+	@Override
+	public List<CommentVO> getCommentList(String parentSeq) {
+		List<CommentVO> commentList = sqlsession.selectList("board.getCommentList", parentSeq);
+		return commentList;
+	}
+
+	// === #97. 딸린 댓글을 삭제한다.(딸린 댓글이 없을수도 있지만 실행한다.)
+	@Override
+	public void deleteComment(HashMap<String, String> paraMap) {
+		sqlsession.update("board.deleteComment", paraMap);
+	}
+
+	// 검색한 List
+	@Override
+	public List<BoardVO> boardListSearch(HashMap<String, String> paraMap) {
+		List<BoardVO> boardList = sqlsession.selectList("board.boardListSearch", paraMap);
+		return boardList;
+	}
+
+	// === #108. 검색어 입력시 자동글 완성하기 5 ===
+	@Override
+	public List<String> wordSearchShow(HashMap<String, String> paraMap) {
+		List<String> wordList = sqlsession.selectList("board.wordSearchShow", paraMap);
+		return wordList;
 	}
 
 	
