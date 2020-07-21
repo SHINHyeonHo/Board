@@ -238,3 +238,40 @@ insert into tblComment(seq, fk_userid, name, content, regDate, parentSeq, status
 values(commentSeq.nextval, 'Shine', '신현호', '댓글입니다.', default, 1, 1);
 
 commit;
+
+select distinct subject
+from tblBoard
+where status = 1 and lower(subject) like '%'||lower('J')||'%';
+
+select distinct name
+from tblBoard
+where status = 1 and lower(name) like '%'||lower('신')||'%';
+
+
+-----------------------------------------------------------------------------------------------------------------------
+desc mymvc_shopping_member;
+
+create table spring_testReservation
+(fk_userid  varchar2(20)        not null    -- 사용자ID
+,email      varchar2(200)       not null    -- 이메일
+,visitdate  date                not null    -- 방문일자
+);
+
+select *
+from spring_testReservation;
+
+select *
+from mymvc_shopping_member;
+
+insert into spring_testReservation(fk_userid, email, visitdate)
+values('Shine', '1np2G3xtYI6bhoiTdvM7svCdP+/XGPRJ9sgtivKKwws=', to_date('2020-07-23 10:00:00', 'yyyy-mm-dd hh24:mi:ss'));
+
+commit;
+
+select to_date(to_char(visitdate, 'yyyy-mm-dd'), 'yyyy-mm-dd') - to_date(to_char(sysdate, 'yyyy-mm-dd'), 'yyyy-mm-dd')
+from spring_testReservation;
+
+select fk_userid, email, to_char(visitdate, 'yyyy-mm-dd hh24:mi:ss') as visitdate
+from spring_testReservation
+where to_date(to_char(visitdate, 'yyyy-mm-dd'), 'yyyy-mm-dd') - to_date(to_char(sysdate, 'yyyy-mm-dd'), 'yyyy-mm-dd') = 2;
+
