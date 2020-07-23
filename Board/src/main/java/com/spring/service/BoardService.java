@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,23 +19,22 @@ import com.spring.board.model.CommentVO;
 import com.spring.common.AES256;
 import com.spring.mail.GoogleMail;
 import com.spring.member.model.MemberVO;
-import com.spring.model.HrVO;
 import com.spring.model.InterBoardDAO;
 import com.spring.model.TestVO;
 
-// === #31. Service 선언 ===
-// 트랜잭션 처리를 담당하는 곳, 업무를 처리하는 곳
-@Component // 굳이 이거 안써도 Service 에 포함되어있다.
-@Service
+// === #31. Service 선언 === 
+// 트랜잭션 처리를 담당하는곳 , 업무를 처리하는 곳, 비지니스(Business)단
+@Service     
 public class BoardService implements InterBoardService {
 
 	// === #34. 의존객체 주입하기(DI: Dependency Injection) ===
 	@Autowired
 	private InterBoardDAO dao;
-	// Type 에 따라 Spring 컨테이너가 알아서 root-context.xml 에 생성된 org.spring.model.BoardDAO 의 bean 을 넣어준다. 
-	// 그러므로 dao 는 null 이 아니다.
+	// Type 에 따라 Spring 컨테이너가 알아서 bean 으로 등록된 com.spring.model.BoardDAO 의 bean 을  dao 에 주입시켜준다. 
+    // 그러므로 dao 는 null 이 아니다.
 
-	//  === #45. 양방향 암호화 알고리즘인 AES256 를 사용하여 복호화 하기 위한 클래스(파라미터가 있는 생성자) 의존객체 주입하기(DI: Dependency Injection) === //
+	
+	// === #45. 양방향 암호화 알고리즘인 AES256 를 사용하여 복호화 하기 위한 클래스 의존객체 주입하기(DI: Dependency Injection) === 
 	@Autowired
 	private AES256 aes;
 	
@@ -53,6 +51,7 @@ public class BoardService implements InterBoardService {
 		return n*m;
 	}
 
+	
 	@Override
 	public HashMap<String, List<TestVO>> test_select() {
 		
@@ -66,19 +65,25 @@ public class BoardService implements InterBoardService {
 		return map;
 	}
 
-	// Form 에서 입력받은 것을 받아온다.
+	
 	@Override
 	public int test_insert(HashMap<String, String> paraMap) {
-		int n = dao.test_insert(paraMap); 
+		
+		int n = dao.test_insert(paraMap);
+		
 		return n;
 	}
 
+
 	@Override
 	public int ajaxtest_insert(HashMap<String, String> paraMap) {
+		
 		int n = dao.ajaxtest_insert(paraMap);
+		
 		return n;
 	}
-	
+
+
 	@Override
 	public List<TestVO> ajaxtest_select() {
 		
@@ -87,26 +92,32 @@ public class BoardService implements InterBoardService {
 		return testvoList;
 	}
 
+
 	@Override
 	public List<TestVO> datatables_test() {
+
 		List<TestVO> testvoList = dao.test_select();
+		
 		return testvoList;
 	}
-	
+
+
 	@Override
 	public List<HashMap<String, String>> test_employees() {
+		
 		List<HashMap<String, String>> empList = dao.test_employees();
+		
 		return empList;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	// === #37. 메인 페이지용 이미지 파일을 가져오기 === //
+
+	// === #37. 메인 페이지용 이미지 파일을 가져오기 === // 
 	@Override
 	public List<String> getImgfilenameList() {
 		List<String> imgfilenameList = dao.getImgfilenameList();
 		return imgfilenameList;
 	}
+
 
 	// === #42. 로그인 처리하기 === //
 	@Override
@@ -114,19 +125,19 @@ public class BoardService implements InterBoardService {
 		
 		MemberVO loginuser = dao.getLoginMember(paraMap);
 		
-		// === #48. aes 의존객체를 사용하여 로그인 되어진 사용자(loginuser)의 이메일 값을 복호화 하도록 한다. === //
+		// === #48. aes 의존객체를 사용하여 로그인 되어진 사용자(loginuser)의 이메일 값을 복호화 하도록 한다. === 
 		if(loginuser != null) {
-
+			
 			if(loginuser.getLastlogindategap() >= 12) {
-				// 마지막으로 로그인 한 날짜 시간이 현재일로 부터 1년(12개월)이 지났으면 해당 로그인 계정을 비활성화(휴면)시킨다.
+				// 마지막으로 로그인 한 날짜시간이 현재일로 부터 1년(12개월)이 지났으면 해당 로그인 계정을 비활성화(휴면)시킨다.
 				loginuser.setIdleStatus(true);
 			}
 			else {
 				if(loginuser.getPwdchangegap() > 3) {
-					// 마지막으로 암호를 변경한 날짜가 현재시각으로 부터 3개월이 지났으면
+					// 마지막으로 암호를 변경한 날짜가 현재시각으로 부터 3개월이 지났으면 
 					loginuser.setRequirePwdChange(true);
 				}
-				
+				 
 				dao.setLastLoginDate(paraMap); // 마지막으로 로그인 한 날짜시간 변경(기록)하기
 				
 				try {
@@ -134,7 +145,7 @@ public class BoardService implements InterBoardService {
 					// loginuser 의 email을 복호화 하도록 한다.
 				} catch (UnsupportedEncodingException | GeneralSecurityException e) {
 					e.printStackTrace();
-				}
+				} 
 			}
 			
 		}
@@ -142,76 +153,71 @@ public class BoardService implements InterBoardService {
 		return loginuser;
 	}
 
-	// === #55. 글쓰기(파일첨부가 없는 글쓰기) === //
+
+	// === #55. 글쓰기(파일첨부가 없는 글쓰기) ===
 	@Override
 	public int add(BoardVO boardvo) {
 		
 		int n = dao.add(boardvo);
-		
 		return n;
 	}
 
-	// == #59. 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 == //
+
+	// == #59. 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 ==
 	@Override
 	public List<BoardVO> boardListNoSearch() {
 		List<BoardVO> boardList = dao.boardListNoSearch();
 		return boardList;
 	}
 
-	// === #63. 글1개 보여주기 === //
+
+	// === #63. 글1개를 보여주기 ==
 	// (먼저, 로그인을 한 상태에서 다른 사람의 글을 조회할 경우에는 글조회수 컬럼 1증가 해야 한다.)
 	@Override
 	public BoardVO getView(String seq, String userid) {
-							// userid 는 로그인을 한 상태이라면 로그인한 사용자의 id 이고,
-							// 			로그인을 하지 않은 상태이라면 null 이다.
-		
-		BoardVO boardvo = dao.getView(seq);
+                           // userid 는 로그인을 한 상태이라면 로그인한 사용자의 id이고,
+		                   // 로그인을 안 한 상태이라면 userid 는 null 이다. 
+		BoardVO boardvo = dao.getView(seq);	
 		
 		if(boardvo != null && 
 		   userid != null &&
 		   !boardvo.getFk_userid().equals(userid)) {
-			// 글조회수 증가는 다른 사람의 글을 읽을때만 증가하도록 해야한다.
-			// 로그인 하지 않은 상탱서는 글 조히수 증가는 없다.
+			// 글조회수 증가는 다른 사람의 글을 읽을때만 증가하도록 해야 한다.
+			// 로그인 하지 않은 상태에서는 글 조회수 증가는 없다.
 			
-			dao.setAddReadCount(seq); // 글 조회수 1증가 하기
-			boardvo = dao.getView(seq);
+			dao.setAddReadCount(seq); // 글조회수 1증가 하기 
+			boardvo = dao.getView(seq);	
 		}
-			
 		
 		return boardvo;
 	}
 
-	// 글조회수 증가는 없고 단순히 글 1개 조회만을 해주는 것이다.
+
+	// === #70. 글조회수 증가는 없고 단순히 글1개 조회만을 해주는 것 ===
 	@Override
 	public BoardVO getViewWithNoAddCount(String seq) {
 		BoardVO boardvo = dao.getView(seq);
 		return boardvo;
 	}
 
-	// === #73. 1개글 수정하기 === //
+
+	// === #73. 1개글 수정하기 ==
 	@Override
 	public int edit(BoardVO boardvo) {
-		
 		int n = dao.updateBoard(boardvo);
-		
 		return n;
 	}
 
+
 	// === #78. 1개글 삭제하기 ==
-	/*
+ /*
 	@Override
-	@Transactional(propagation=Propagation.REQUIRED, isolation=Isolation.READ_COMMITTED, rollbackFor= {Throwable.class})
-	public int del(HashMap<String,String> paraMap) throws Throwable {
-		int n = 0;
-		int result = 0;
-		result = dao.deleteBoard(paraMap);
-		if(result>0) {
-			n = dao.deleteComment(paraMap);
-		}
+	public int del(HashMap<String,String> paraMap) {
+		int n = dao.deleteBoard(paraMap);
 		return n;
 	}
-	*/
-	
+ */
+    
 	// 먼저 #78. 을 주석처리 한 다음에 아래와 같이 한다.
 	// === #96. 1개글 삭제하기(딸린 댓글이 있는 경우 댓글도 동시에 삭제한다.)
 	//          트랜잭션처리해야 함. ==
@@ -226,12 +232,13 @@ public class BoardService implements InterBoardService {
 		
 		return n;
 	}
-	
-	// AOP 에서 사용하는 것으로 회원에게 포인트 증가를 하기 위한 것이다.
+
+	// === AOP 에서 사용하는 것으로 회원에게 포인트 증가를 하기 위한것. ===
 	@Override
 	public void pointPlus(HashMap<String, String> paraMap) {
 		dao.pointPlus(paraMap);
 	}
+
 
 	// === #85. 댓글쓰기 ===
 	// tblComment 테이블에 insert 된 다음에 
@@ -262,13 +269,14 @@ public class BoardService implements InterBoardService {
 		return commentList;
 	}
 
-	 
-	// 검색한 List
+
+	// == #101. 페이징 처리를 안한 검색어가 있는 전체 글목록 보여주기 ==
 	@Override
 	public List<BoardVO> boardListSearch(HashMap<String, String> paraMap) {
 		List<BoardVO> boardList = dao.boardListSearch(paraMap);
 		return boardList;
 	}
+
 
 	// === #107. 검색어 입력시 자동글 완성하기 4 ===
 	@Override
@@ -277,9 +285,10 @@ public class BoardService implements InterBoardService {
 		return wordList;
 	}
 
-	// === 스프링 스케줄러 연습1 ===
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	/*
+
+	// === 스프링 스케줄러 연습1 === 
+//////////////////////////////////////////////////////////////////////////////////////////////
+/*
 	스케줄은 3가지 종류  cron, fixedDelay, fixedRate 가 있다. 
 	
 	
@@ -376,24 +385,58 @@ public class BoardService implements InterBoardService {
 	>>> fixedRate <<<
 	이전에 실행된 task의 시작 시간으로부터 정의된 시간만큼 지난 후 다음 task를 실행함. 단위는 밀리초임.
 	@Scheduled(fixedRate=1000)
+
+*/
 	
-	*/
-//	=== Spring Scheduler(스프링 스케줄러)를 사용한 email 발송하기 ===
-//	매일 새벽 4시 마다 고객이 예약한 2일전에 해당하는 고객들에게(List<String>email)
-//  메일을 자동 발송(문자를 자동 발송)하는 에제를 만들 수 있다.
+//  === Spring Scheduler(스프링 스케줄러)를 사용한 email 발송하기 === 
+//      매일 새벽 4시 마다 고객이 예약한 2일전에 해당하는 고객들에게( List<String(e메일주소)> )
+//      메일을 자동 발송 (문자를 자동 발송)하는 예제를 만들 수 있다. 	
 	@Override
 //	@Scheduled(cron="0 * * * * *")
-	@Scheduled(cron="0 0 0 * * *")
+	@Scheduled(cron="0 0 4 * * *")
 	public void scheduleTest1() {
-		// <주의> 스케줄러로 사용되어지는 메소드는 반드시 파라미터가 없어야 한다.!!!!!!!
+		// <주의> 스케줄러로 사용되어지는 메소드는 반드시 파라미터가 없어야 한다.!!!!
 		
 		// === 현재시각 나타내기 === //
-		Calendar currentDate = Calendar.getInstance(); // 현재 날짜와 시간을 얻어온다.
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar currentDate = Calendar.getInstance(); // 현재날짜와 시간을 얻어온다. 
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
 		System.out.println("현재시각 => " + df.format(currentDate.getTime()));
 		
 		// === 메일발송 하기 === //
 		
 	}
+
+
+	// === #113. 총 게시물 건수(totalCount)를 구하기(검색이 있을 때와 검색이 없을때로 나뉜다.)
+	@Override
+	public int getTotalCount(HashMap<String, String> paraMap) {
+		int n = dao.getTotalCount(paraMap);
+		return n;
+	}
+
+
+	// === #116. 페이징 처리한 글목록 가져오기(검색이 있든지, 검색이 없든지 모두 다 포함한것) === 
+	@Override
+	public List<BoardVO> boardListSearchWithPaging(HashMap<String, String> paraMap) {
+		List<BoardVO> boardList = dao.boardListSearchWithPaging(paraMap);
+		return boardList;
+	}
+
+	
+	// === #127. 원게시물에 딸린 댓글들을 페이징처리해서 조회해오기(Ajax 로 처리) ===
+	@Override
+	public List<CommentVO> getCommentListPaging(HashMap<String, String> paraMap) {
+		List<CommentVO> commentList = dao.getCommentListPaging(paraMap);
+		return commentList;
+	}
+
+
+	 // === #131. 원게시물에 딸린 댓글 조회해오기(Ajax로 처리) ===
+	@Override
+	public int getCommentTotalCount(HashMap<String, String> paraMap) {
+		int n = dao.getCommentTotalCount(paraMap);
+		return n;
+	}
+	
 	
 }

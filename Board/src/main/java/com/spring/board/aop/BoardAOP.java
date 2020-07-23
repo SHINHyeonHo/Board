@@ -124,7 +124,8 @@ public class BoardAOP {
 	//	  Pointcut 생성시 public 은 생략가능하다. 접근제한자를 생략하면 public 이 있는 것으로 본다.
 	//	   왜냐하면 외부에서 특정메소드에 접근을 해야 하므로 접근제한자는 무조건 public 이어야 하기 때문이다.
 	
-	@Pointcut("execution(* com.spring..*Controller.*(..))")
+	// @Pointcut("execution(* com.spring..*Controller.*(..))")
+	@Pointcut("execution(* com.spring..*Controller.speed(..))") // 안뜨게하려고 잘못된걸 입력해놓은것
 	public void pcut() {}
 	
 	// == Around Advice(공통관심사, 보조업무)를 구현한다.

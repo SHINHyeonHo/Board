@@ -238,3 +238,83 @@ insert into tblComment(seq, fk_userid, name, content, regDate, parentSeq, status
 values(commentSeq.nextval, 'Shine', '신현호', '댓글입니다.', default, 1, 1);
 
 commit;
+
+select distinct subject
+from tblBoard
+where status = 1 and lower(subject) like '%'||lower('J')||'%';
+
+select distinct name
+from tblBoard
+where status = 1 and lower(name) like '%'||lower('신')||'%';
+
+
+-----------------------------------------------------------------------------------------------------------------------
+desc mymvc_shopping_member;
+
+create table spring_testReservation
+(fk_userid  varchar2(20)        not null    -- 사용자ID
+,email      varchar2(200)       not null    -- 이메일
+,visitdate  date                not null    -- 방문일자
+);
+
+select *
+from spring_testReservation;
+
+select *
+from mymvc_shopping_member;
+
+insert into spring_testReservation(fk_userid, email, visitdate)
+values('Shine', '1np2G3xtYI6bhoiTdvM7svCdP+/XGPRJ9sgtivKKwws=', to_date('2020-07-23 10:00:00', 'yyyy-mm-dd hh24:mi:ss'));
+
+commit;
+
+select to_date(to_char(visitdate, 'yyyy-mm-dd'), 'yyyy-mm-dd') - to_date(to_char(sysdate, 'yyyy-mm-dd'), 'yyyy-mm-dd')
+from spring_testReservation;
+
+select fk_userid, email, to_char(visitdate, 'yyyy-mm-dd hh24:mi:ss') as visitdate
+from spring_testReservation
+where to_date(to_char(visitdate, 'yyyy-mm-dd'), 'yyyy-mm-dd') - to_date(to_char(sysdate, 'yyyy-mm-dd'), 'yyyy-mm-dd') = 2;
+
+----------------------------------------------------------------------------------------------------------------------
+-- 07 23
+------------------------ >>>  페이징 처리하기 <<< -----------------------------------------
+begin
+    for i in 1..100 loop 
+        insert into tblBoard(seq, fk_userid, name, subject, content, pw, readCount, regDate, status)
+        values(boardSeq.nextval, 'leess', '이순신', '이순신 입니다.'||i, '안녕하세요? 이순신 입니다.'||i, '1234', default, default, default); 
+    end loop;
+end;   
+
+begin
+    for i in 1..100 loop 
+        insert into tblBoard(seq, fk_userid, name, subject, content, pw, readCount, regDate, status)
+        values(boardSeq.nextval, 'admin', '엄정화', '엄정화 입니다.'||i, '안녕하세요? 엄정화 입니다.'||i, '1234', default, default, default); 
+    end loop;
+end;
+
+select count(*)
+from tblBoard
+order by seq desc;
+
+commit;
+
+begin
+    for i in 1..100 loop 
+        insert into tblComment(seq, fk_userid, name, content, regdate, parentseq, status)
+        values(commentSeq.nextval, 'eomjh', '엄정화', '좋은 하루 되세요~~'||i, default, 1, default);
+    end loop;
+end; 
+
+update tblBoard set commentCount = commentCount + 100
+where seq = 1;
+
+select *
+from tblComment
+where parentseq = 1
+order by seq desc;
+
+select seq, commentCount
+from tblBoard
+where seq = 1;
+
+commit;
