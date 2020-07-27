@@ -158,6 +158,18 @@ public class BoardService implements InterBoardService {
 	@Override
 	public int add(BoardVO boardvo) {
 		
+		// === #140. 글쓰기가 원글쓰기인지 아니면 답변글쓰기인지를 구분하여
+		//           tblBoard 테이블에 insert 를 해주어야 한다.
+		//           원글쓰기 이라면 tblBoard 테이블의 groupno 컬럼의 값은 groupno 컬럼의 최대값(max)+1 로 해서 insert 해야 하고,  
+		//           답변글쓰기 이라면 넘겨받은 값을 그대로 insert 해주어야 한다.
+
+		// == 원글쓰기인지, 답변글쓰기인지
+		if(boardvo.getFk_seq() == null || boardvo.getFk_seq().trim().isEmpty() ) {
+			// 원글쓰기이다.
+			int groupno = dao.getGroupnoMax()+1;
+			boardvo.setGroupno(String.valueOf(groupno));
+		} 
+		
 		int n = dao.add(boardvo);
 		return n;
 	}
@@ -435,6 +447,26 @@ public class BoardService implements InterBoardService {
 	@Override
 	public int getCommentTotalCount(HashMap<String, String> paraMap) {
 		int n = dao.getCommentTotalCount(paraMap);
+		return n;
+	}
+
+
+	// === #151. 글쓰기(파일첨부가 있는 글쓰기) ===
+	@Override
+	public int add_withFile(BoardVO boardvo) {
+		// === 글쓰기가 원글쓰기인지 아니면 답변글쓰기인지를 구분하여
+		//     tblBoard 테이블에 insert 를 해주어야 한다.
+		//     원글쓰기 이라면 tblBoard 테이블의 groupno 컬럼의 값은 groupno 컬럼의 최대값(max)+1 로 해서 insert 해야 하고,  
+		//     답변글쓰기 이라면 넘겨받은 값을 그대로 insert 해주어야 한다.
+
+		// == 원글쓰기인지, 답변글쓰기인지
+		if(boardvo.getFk_seq() == null || boardvo.getFk_seq().trim().isEmpty() ) {
+			// 원글쓰기이다.
+			int groupno = dao.getGroupnoMax()+1;
+			boardvo.setGroupno(String.valueOf(groupno));
+		} 
+		
+		int n = dao.add_withFile(boardvo); // 첨부파일이 있는 경우
 		return n;
 	}
 	

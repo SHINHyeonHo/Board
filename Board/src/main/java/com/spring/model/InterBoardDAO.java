@@ -60,6 +60,10 @@ public interface InterBoardDAO {
 	
 	int getCommentTotalCount(HashMap<String, String> paraMap);  // 원글 글번호(parentSeq)에 해당하는 댓글의 총갯수 알아오기
 	
+	int getGroupnoMax(); // tblBoard 테이블에서 groupno 컬럼의 최대값 구하기
+	
+	int add_withFile(BoardVO boardvo); // 글쓰기(파일첨부가 있는 글쓰기)
+	
 	
 	
 }

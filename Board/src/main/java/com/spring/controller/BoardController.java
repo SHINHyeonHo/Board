@@ -1,5 +1,8 @@
 package com.spring.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,10 +19,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.spring.board.model.BoardVO;
 import com.spring.board.model.CommentVO;
+import com.spring.common.FileManager;
 import com.spring.common.MyUtil;
 import com.spring.common.Sha256;
 import com.spring.member.model.MemberVO;
@@ -86,8 +92,12 @@ public class BoardController {
 	// private InterBoardService service = new BoardService(); 
 	// ===> BoardController 객체가 메모리에서 삭제 되어지면  BoardService service 객체는 멤버변수(필드)이므로 메모리에서 자동적으로 삭제되어진다.	
 	
-	@Autowired
+	@Autowired // Type에 따라 알아서 Bean 을 주입해준다.
 	private InterBoardService service;
+	
+	// ===== #150. 파일업로드 및 다운로드를 해주는 FileManager 클래스 의존객체 주입하기(DI : Dependency Injection) =====
+	@Autowired // Type에 따라 알아서 Bean 을 주입해준다.
+	private FileManager fileManager;
 	
 	
 	@RequestMapping(value="/test_insert.action")
@@ -506,6 +516,16 @@ public class BoardController {
 	@RequestMapping(value="/add.action")
 	public ModelAndView requiredLogin_add(HttpServletRequest request, HttpServletResponse response, ModelAndView mav) {
 		
+		// === #138. 답변글쓰기가 추가된 경우 === //
+		String groupno = request.getParameter("groupno");
+		String fk_seq = request.getParameter("fk_seq");
+		String depthno = request.getParameter("depthno");
+		
+		mav.addObject("groupno", groupno);
+		mav.addObject("fk_seq", fk_seq);
+		mav.addObject("depthno", depthno);
+		//////////////////////////////////////////////////
+		
 		mav.setViewName("board/add.tiles1");
 	    //   /WEB-INF/views/tiles1/board/add.jsp 파일을 생성한다.
 		
@@ -513,14 +533,110 @@ public class BoardController {
 	}
 	
 	
+	
 	// === #54. 게시판 글쓰기 완료 요청 ==
 	@RequestMapping(value="/addEnd.action", method= {RequestMethod.POST})
-	public String pointPlus_addEnd(HashMap<String, String> paraMap, BoardVO boardvo) {
+//	public String pointPlus_addEnd(HashMap<String, String> paraMap, BoardVO boardvo) {
 	    // form 태그의 name 명과  BoardVO 의  필드명이 같다라면
 		// request.getParameter("form 태그의 name명"); 을 사용하지 않더라도
 		// 자동적으로 BoardVO boardvo 에 set 되어진다.
 		
-		int n = service.add(boardvo);
+/*
+	=== #147. 파일첨부가 된 글쓰기 이므로 
+			   먼저 위의 public String pointPlus_addEnd(HashMap<String, String> paraMap, BoardVO boardvo) { 을 주석처리한 이후에 아래와 같이 해야한다.
+			  MultipartHttpServletRequest mrequest 를 사용하기 위해서는
+			  \Board\src\main\webapp\WEB-INF\spring\appServlet\servlet-context.xml 파일에서 #20. 의
+			  multipartResolver를 bean으로 등록해주어야 한다.!!!!
+*/
+	
+	public String pointPlus_addEnd(HashMap<String, String> paraMap, BoardVO boardvo, MultipartHttpServletRequest mrequest) {
+		/*
+			웹페이지에 요청form이 enctype="multipart/form-data" 으로 되어있어서 Multipart 요청(파일처리 요청)이 들어올때 
+	      	컨트롤러에서는 HttpServletRequest 대신 MultipartHttpServletRequest 인터페이스를 사용해야 한다.
+	   		MultipartHttpServletRequest 인터페이스는 HttpServletRequest 인터페이스와 MultipartRequest 인터페이스를 상속받고있다.
+	      	즉, 웹 요청 정보를 얻기 위한 getParameter()와 같은 메소드와 Multipart(파일처리) 관련 메소드를 모두 사용가능하다.
+		*/
+		
+		// === 사용자가 쓴 글에 파일이 첨부되어있는 것인지 아니면 파일첨부가 안된것인지 구분을 지어주어야 한다.
+
+		// === !!! 첨부파일이 있는지 없는지 알아오기 시작 !!! ===
+		MultipartFile attach = boardvo.getAttach();
+		if( !attach.isEmpty() ) {
+			// attach(첨부파일)가 비어있지 않다면(즉, 첨부파일이 있는 경우라면
+			/*
+				1. 사용자가 보낸 파일을 WAS(톰캣)의 특정 폴더에 저장해주어야 한다.
+				>>> 파일이 업로드 되어질 특정 경로(폴더)지정해주기
+					우리는 WAS의 webapp/resources/files 라는 폴더로 지정해준다.
+			*/
+			// WAS의 webapp 의 절대경로를 알아와야 한다.
+			HttpSession session = mrequest.getSession();
+			String root = session.getServletContext().getRealPath("/");
+			String path = root + "resources" + File.separator + "files";
+			/* File.separator 는 운영체제에서 사용하는 폴더와 파일의 구분자이다.
+			     운영체제가 Windows 이라면 File.separator 는 "\" 이고,
+			     운영체제가 UNIX, Linux 이라면 File.separator 는 "/" 이다.
+			*/
+			// path 가 첨부파일을 저장할 WAS(톰캣)의 폴더가 된다.
+			// System.out.println("BoardController path => " + path);
+			// BoardController path => C:\springworkspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\Board\resources\files
+			
+			/*
+				2. 파일첨부를 위한 변ㅅ의 설정 및 값을 초기화 한 후 파일 올리기
+			*/
+			String newFileName = "";
+			// WAS(톰캣)의 디스크에 저장될 파일명 
+			
+			byte[] bytes = null;
+			// 첨부파일을 WAS(톰캣)의 디스크에 저장할때 사용되는 용도.
+			
+			long fileSize = 0;
+			// 파일크기를 읽어오기 위한 용도
+			
+			try {
+				bytes = attach.getBytes();
+				// getBytes() 메소드는 첨부된 파일(attach)을 바이트단위로 파일을 다 읽어오는 것이다. 
+				// 예를 들어, 첨부한 파일이 "강아지.png" 이라면
+				// 이파일을 WAS(톰캣) 디스크에 저장시키기 위해 byte[] 타입으로 변경해서 올린다.
+				
+				newFileName = fileManager.doFileUpload(bytes, attach.getOriginalFilename(), path);
+				// 위의 것이 파일 올리기를 해주는 것이다.
+				// attach.getOriginalFilename() 은 첨부된 파일의 파일명(강아지.png)이다.
+				
+				// System.out.println("BoardController newFileName => " + newFileName);
+				// BoardController newFileName => 202007271209093467247615434800.jpg
+				// BoardController newFileName => 202007271210073467305353517600.jpg
+				
+				/*
+					3. BoardVO boardvo 에 fileName 값과 orgFilename 값과 fileSize 값을 넣어주기
+				*/
+				boardvo.setFileName(newFileName);
+				// WAS(톰캣)에 저장될 파일명(20190725092715353243254235235234.png)
+				
+				boardvo.setOrgFilename(attach.getOriginalFilename());
+				// 게시판 페이지에서 첨부된 파일명(강아지.png)을 보여줄때 및 
+				// 사용자가 파일을 다운로드 할때 사용된어지는 파일명
+				
+				fileSize = attach.getSize();
+				boardvo.setFileSize(String.valueOf(fileSize));
+				// 게시판 페이지에서 첨부한 파일의 크기를 보여줄때 사용하는 것으로써  String 타입으로 변경해서 저장한다.
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
+		// === !!! 첨부파일이 있는지 없는지 알아오기 끝 !!! ===
+		
+		int n = 0;
+		
+		if( attach.isEmpty() ) {
+			// 첨부파일이 없는 경우라면
+			n = service.add(boardvo);
+		}
+		else {
+			// 첨부파일이 있는 경우라면
+			n = service.add_withFile(boardvo);
+		}
 		
 		paraMap.put("userid", boardvo.getFk_userid());
 		// === after Advice용 (글을 작성하면 포인트 100 을 주기위해서 글쓴이가 누구인지 알아온다.) === 
@@ -1170,6 +1286,72 @@ public class BoardController {
 	   
 	   return jsonObj.toString();
    }
+   
+   
+   // ===== #159. 첨부파일 다운로드 받기 =====
+   @RequestMapping(value="/download.action") 
+   public void requiredLogin_download(HttpServletRequest request, HttpServletResponse response) {
+		
+	   String seq = request.getParameter("seq"); 
+	   // 첨부파일이 있는 글번호
+		
+	   // 첨부파일이 있는 글번호에서 
+	   // 201907250930481985323774614.png 처럼
+	   // 이러한 fileName 값을 DB에서 가져와야 한다. 
+	   // 또한 orgFileName 값도 DB에서 가져와야 한다.
+		
+	   BoardVO vo = service.getViewWithNoAddCount(seq);
+	   // 조회수 증가 없이 1개 글 가져오기
+	   // 먼저 board.xml 에 가서 id가 getView 인것에서
+	   // select 절에 fileName, orgFilename, fileSize 컬럼을
+	   // 추가해주어야 한다.
+	   
+	   String fileName = vo.getFileName(); 
+	   // 201907250930481985323774614.png 와 같은 것이다.
+	   // 이것이 바로 WAS(톰캣) 디스크에 저장된 파일명이다.
+	   
+	   String orgFilename = vo.getOrgFilename(); 
+	   // 강아지.png 처럼 다운받을 사용자에게 보여줄 파일명.
+	
+		
+	   // 첨부파일이 저장되어 있는 
+	   // WAS(톰캣)의 디스크 경로명을 알아와야만 다운로드를 해줄수 있다. 
+	   // 이 경로는 우리가 파일첨부를 위해서
+	   //    /addEnd.action 에서 설정해두었던 경로와 똑같아야 한다.
+	   // WAS 의 webapp 의 절대경로를 알아와야 한다. 
+	   HttpSession session = request.getSession();
+	
+	   String root = session.getServletContext().getRealPath("/"); 
+	   String path = root + "resources"+File.separator+"files";
+	   // path 가 첨부파일들을 저장할 WAS(톰캣)의 폴더가 된다. 
+	 
+	   // **** 다운로드 하기 **** //
+	   // 다운로드가 실패할 경우 메시지를 띄워주기 위해서
+	   // boolean 타입 변수 flag 를 선언한다.
+	   boolean flag = false;
+		
+	   flag = fileManager.doFileDownload(fileName, orgFilename, path, response);
+	   // 다운로드가 성공이면 true 를 반납해주고,
+	   // 다운로드가 실패이면 false 를 반납해준다.
+		
+	   if(!flag) {
+		   // 다운로드가 실패할 경우 메시지를 띄워준다.
+			
+		   response.setContentType("text/html; charset=UTF-8"); 
+		   PrintWriter writer = null;
+			
+		   try {
+			   writer = response.getWriter();
+			   // 웹브라우저상에 메시지를 쓰기 위한 객체생성.
+		   } catch (IOException e) {
+				
+		   }
+			
+		   writer.println("<script type='text/javascript'>alert('파일 다운로드가 불가능합니다.!!')</script>");       
+			
+	   }
+		 
+   } // end of void download(HttpServletRequest req, HttpServletResponse res)---------
    
 }
 
