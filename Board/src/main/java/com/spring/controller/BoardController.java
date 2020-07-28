@@ -2,6 +2,7 @@ package com.spring.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
@@ -1352,6 +1353,82 @@ public class BoardController {
 	   }
 		 
    } // end of void download(HttpServletRequest req, HttpServletResponse res)---------
+   
+   
+   // === #162. 스마트에디터. 드래그앤드롭을 사용한 다중사진 파일 업로드 === //
+   @RequestMapping(value="/image/multiplePhotoUpload.action", method= {RequestMethod.POST}) 
+   public void multiplePhotoUpload(HttpServletRequest request, HttpServletResponse response) {
+	   
+	   /*
+	   		1. 사용자가 보낸 파일을 WAS(톰캣)의 특정 폴더에 저장해주어야 한다.
+	   		>>> 파일이 업로드 되어질 특정 경로(폴더)지정해주기
+	   		우리는 WAS 의 webapp/resources/photo_upload 라는 폴더로 지정해준다.
+	   */
+	   
+	   // WAS의 webapp 의 절대경로를 알아와야 한다.
+	   HttpSession session = request.getSession();
+	   String root = session.getServletContext().getRealPath("/");
+	   String path = root + "resources" + File.separator + "photo_upload";
+	   /*  	File.separator 는 운영체제에서 사용하는 폴더와 파일의 구분자이다.
+	     	운영체제가 Windows 이라면 File.separator 는 "\" 이고,
+	     	운영체제가 UNIX, Linux 이라면 File.separator 는 "/" 이다.
+	   */
+	   // path 가 첨부파일을 저장할 WAS(톰캣)의 폴더가 된다.
+	   // System.out.println("BoardController path => " + path);
+	   // BoardController path => C:\springworkspace\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\Board\resources\photo_upload
+	   
+	   File dir = new File(path);
+	   if(!dir.exists()) {
+		   dir.mkdir();
+	   }
+	   
+	   String strURL = "";
+		
+	   try {
+		   if(!"OPTIONS".equals(request.getMethod().toUpperCase())) {
+			   String filename = request.getHeader("file-name"); //파일명을 받는다 - 일반 원본파일명
+		    		
+			   // System.out.println(">>>> 확인용 filename ==> " + filename); 
+		       // >>>> 확인용 filename ==> berkelekle%ED%8A%B8%EB%9E%9C%EB%94%9405.jpg
+
+			   InputStream is = request.getInputStream();
+		    	
+			   /*
+		          	요청 헤더의 content-type이 application/json 이거나 multipart/form-data 형식일 때,
+		          	혹은 이름 없이 값만 전달될 때 이 값은 요청 헤더가 아닌 바디를 통해 전달된다. 
+		          	이러한 형태의 값을 'payload body'라고 하는데 요청 바디에 직접 쓰여진다 하여 'request body post data'라고도 한다.
+
+	               	서블릿에서 payload body는 Request.getParameter()가 아니라 
+	            	Request.getInputStream() 혹은 Request.getReader()를 통해 body를 직접 읽는 방식으로 가져온다. 	
+			   */
+
+			   String newFilename = fileManager.doFileUpload(is, filename, path);
+		    	
+			   int width = fileManager.getImageWidth(path+File.separator+newFilename);
+				
+			   if(width > 600)
+				   width = 600;
+					
+			   // System.out.println(">>>> 확인용 width ==> " + width);
+			   // >>>> 확인용 width ==> 600
+			   // >>>> 확인용 width ==> 121
+		    	
+			   String CP = request.getContextPath(); // board
+				
+			   strURL += "&bNewLine=true&sFileName="; 
+			   strURL += newFilename;
+			   strURL += "&sWidth="+width;
+			   strURL += "&sFileURL="+CP+"/resources/photo_upload/"+newFilename;
+		   }
+			
+		   /// 웹브라우저상에 사진 이미지를 쓰기 ///
+		   PrintWriter out = response.getWriter();
+		   out.print(strURL);
+	   } catch(Exception e){
+		   e.printStackTrace();
+	   }
+	   
+   } // end of public void multiplePhotoUpload(HttpServletRequest request, HttpServletResponse response)
    
 }
 
