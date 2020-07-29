@@ -1,0 +1,66 @@
+'http://127.0.0.1:4098' has been blocked by CORS policy
+
+>> CORS란? 크로스 도메인란? <<
+   CORS는 Cross Origin Resource Sharing의 약자로 도메인 또는 포트가 다른 서버의 자원을 요청하는 매커니즘을 말합니다.
+     웹 브라우저에서 Ajax 등을 통해 다른 도메인의 서버에 url(data)를 호출할 경우, 나타나는 보안문제를 말한다.
+     여기서 말하는 보안문제란 만약, 내가 만든 웹서비스 서버를 다른 도메인에서 아무나 접근하여 사용한다면, 보안상 문제가 될 수 있다는 것이다.
+     어쨌든 도메인 또는 포트가 다른 서버의 자원을 요청을 할때는 cross-origin HTTP 에 의해 요청된다.
+     하지만 동일 출처 정책(same-origin policy) 때문에 CORS 같은 상황이 발생 하면 외부서버에 요청한 데이터를 브라우저에서 보안목적으로 차단한다. 
+     이로 인해 정상적으로 데이터를 받을 수 없게된다.
+     서버와 클라이언트가 분리되어 있는 앱에서는 cross-origin HTTP 요청을 서버에서 승인해주는 것이 좋다.
+
+
+>> 동일 출처 정책(same-origin policy) <<
+     불러온문서나 스크립트가 다른 출처에서 가져온 리소스와 상호작용하는 것을 제한하는 중요한 보안 방식이다. 
+     이것은 잠재적 악성 문서를 격리하여, 공격 경로를 줄이는데 도움이 된다.
+
+>> Spring 4.2 부터 지원되는 @CrossOrigin 어노테이션은 CORS 를 스프링을 통해 설정할 수 있는 기능이다.
+   @CrossOrigin 어노테이션을 붙여주면 기본적으로 '모든 도메인, 모든 요청방식'에 대해 허용한다는 뜻이다.
+   @CrossOrigin 어노테이션을 메소드에 붙여주면 해당 메소드만 '모든 도메인, 모든 요청방식'에 대해 허용한다는 뜻이고,
+   Class 상단에 @CrossOrigin 어노테이션을 붙여주면 여러 메소드에 동일하게 '모든 도메인, 모든 요청방식'에 대해 허용한다는 뜻이다.
+
+@CrossOrigin(origins = "*")
+
+@CrossOrigin(origins = "http://127.0.0.1:4098")
+
+@CrossOrigin(origins = "http://domain1.com, http://domain2.com")
+
+// === 컨트롤러 선언 ===
+@Component
+/* XML에서 빈을 만드는 대신에 클래스명 앞에 @Component 어노테이션을 적어주면 해당 클래스는 bean으로 자동 등록된다. 
+     그리고 bean의 이름(첫글자는 소문자)은 해당 클래스명이 된다. */
+@Controller 
+@CrossOrigin(origins = "http://127.0.0.1:4098")  // 넥사크로가 사용하는 포트가 4098 임.
+public class BoardController {
+
+	// === 의존객체 주입하기(DI: Dependency Injection) ===
+	@Autowired   // Type에 따라 알아서 Bean 을 주입해준다.
+	private InterBoardService service;
+
+    ..................... 	
+}	
+
+>> 만약 Controller 가 여러개이고 모든 Controller에 대해 동일한 @CrossOrigin을 적용하고 싶다면 servlet-context.xml 파일에서 
+     설정하는 방법이 있다. 이것은 https://jwkim96.tistory.com/81 를 참조해서 하도록 한다. << 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

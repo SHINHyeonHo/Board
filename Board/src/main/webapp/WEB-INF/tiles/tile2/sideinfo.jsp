@@ -31,7 +31,7 @@
 			                                               // 현재시각의 분이 59분이라면 weatherTimejugi에 (1+30)분을 넣어준다.
 		}
 		
-	//	loopshowWeather(); // 기상청 날씨정보 공공API XML데이터 호출하기  나중에 수업
+	loopshowWeather(); // 기상청 날씨정보 공공API XML데이터 호출하기  나중에 수업
 		
 	}); // end of ready(); ---------------------------------
 
@@ -97,7 +97,7 @@
 	function showWeather() {
 
 		$.ajax({
-				url: "<%= request.getContextPath() %>/weatherXML.action",
+				url: "<%= request.getContextPath() %>/opendata/weatherXML.action",
 				type: "GET",
 				dataType: "XML",
 				success: function(xml){

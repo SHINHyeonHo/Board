@@ -27,5 +27,19 @@ public class EmpService implements InterEmpService {
 		List<HashMap<String, String>> empList = dao.empList(paraMap);
 		return empList;
 	}
+
+	// employees 테이블에서 부서명별 인원수 및 퍼센티지 가져오기
+	@Override
+	public List<HashMap<String, String>> deptnameJSON() {
+		List<HashMap<String, String>> deptnamePercentageList = dao.deptnameJSON();
+		return deptnamePercentageList;
+	}
+
+	// employees 테이블에서 성별 인원수 및 퍼센티지 가져오기
+	@Override
+	public List<HashMap<String, String>> genderJSON() {
+		List<HashMap<String, String>> genderPercentageList = dao.genderJSON();
+		return genderPercentageList;
+	}
 	
 }

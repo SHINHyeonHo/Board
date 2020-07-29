@@ -6,120 +6,215 @@
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
-<style>
-.highcharts-figure, .highcharts-data-table table {
-    min-width: 320px; 
-    max-width: 800px;
-    margin: 1em auto;
-}
-
-.highcharts-data-table table {
-	font-family: Verdana, sans-serif;
-	border-collapse: collapse;
-	border: 1px solid #EBEBEB;
-	margin: 10px auto;
-	text-align: center;
-	width: 100%;
-	max-width: 500px;
-}
-.highcharts-data-table caption {
-    padding: 1em 0;
-    font-size: 1.2em;
-    color: #555;
-}
-.highcharts-data-table th {
-	font-weight: 600;
-    padding: 0.5em;
-}
-.highcharts-data-table td, .highcharts-data-table th, .highcharts-data-table caption {
-    padding: 0.5em;
-}
-.highcharts-data-table thead tr, .highcharts-data-table tr:nth-child(even) {
-    background: #f8f8f8;
-}
-.highcharts-data-table tr:hover {
-    background: #f1f7ff;
-}
-
-
-input[type="number"] {
-	min-width: 50px;
-}
-</style>
-
-<figure class="highcharts-figure">
-    <div id="chart_container"></div>
-    <p class="highcharts-description">
-        Pie charts are very popular for showing a compact overview of a
-        composition or comparison. While they can be harder to read than
-        column charts, they remain a popular choice for small datasets.
-    </p>
-</figure>
+<div align="center">
+	<h2>우리회사 사원 통계정보(차트)</h2>
+	
+	<form name="searchFrm" style="margin: 20px 0 50px 0;" >
+		<select name="searchType" id="searchType" style="height:25px;">
+			<option value="">통계선택</option>
+			<option value="deptname">부서별 인원통계</option>
+			<option value="gender">성별인원통계</option>
+			<option value="deptpnameGender">부서별 성별 인원통계</option>
+		</select>
+	</form>
+	
+	<div id="chart_container" style="width: 90%;"></div>
+	<div id="table_container" style="width: 90%; margin-top: 20px;"></div>
+</div>
 
 <script type="text/javascript">
 	$(document).ready(function(){
-		Highcharts.chart('chart_container', {
-		    chart: {
-		        plotBackgroundColor: null,
-		        plotBorderWidth: null,
-		        plotShadow: false,
-		        type: 'pie'
-		    },
-		    title: {
-		        text: '브라우저 시장 점유율 2018년 1월'
-		    },
-		    tooltip: {
-		        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-		    },
-		    accessibility: {
-		        point: {
-		            valueSuffix: '%'
-		        }
-		    },
-		    plotOptions: {
-		        pie: {
-		            allowPointSelect: true,
-		            cursor: 'pointer',
-		            dataLabels: {
-		                enabled: true,
-		                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
-		            }
-		        }
-		    },
-		    series: [{
-		        name: '브랜드',
-		        colorByPoint: true,
-		        data: [{
-		            name: '크롬',
-		            y: 61.41,
-		            sliced: true,
-		            selected: true
-		        }, {
-		            name: 'Internet Explorer',
-		            y: 11.84
-		        }, {
-		            name: 'Firefox',
-		            y: 10.85
-		        }, {
-		            name: 'Edge',
-		            y: 4.67
-		        }, {
-		            name: 'Safari',
-		            y: 4.18
-		        }, {
-		            name: 'Sogou Explorer',
-		            y: 1.64
-		        }, {
-		            name: 'Opera',
-		            y: 1.6
-		        }, {
-		            name: 'QQ',
-		            y: 1.2
-		        }, {
-		            name: 'Other',
-		            y: 2.61
-		        }]
-		    }]
+		
+		$("#searchType").bind("change", function(){
+			func_choice($(this).val());
 		});
-	});
+		
+	}); // end of $(document).ready(function()
+	
+	function func_choice(searchTypeVal) {
+		
+		switch (searchTypeVal) {
+			case "":	// 통계선택 선택시
+				$("#chart_container").empty();
+				$("#table_container").empty();
+				break;
+			case "deptname":	// 부서별 인원통계 선택시
+				$.ajax({
+					url:"/board/chart/deptnameJSON.action",
+					// url:"http://192.168.50.54:9090/board/chart/deptnameJSON.action", // ==> CORS Policy 에 따라 안됨
+					// url:"/board/chart/remote_genderJSON.action",
+					dataType:"JSON",
+					success:function(json) {
+						$("#chart_container").empty();
+						
+						var resultArr = [];
+						
+						for(var i=0; i<json.length; i++) {
+							var obj;
+							if(json[i].department_name == "Shipping") {
+								obj = {name: json[i].department_name,
+									   y: Number(json[i].percentage),
+									   sliced: true,
+									   selected: true};
+							}
+							else {
+								obj = {name: json[i].department_name,
+									   y: Number(json[i].percentage)};
+							}
+							
+							resultArr.push(obj); // 배열속에 객체를 넣기
+						} // end of for(var i=0; i<json.length; i++)
+						
+						//////////////////////////////////////////////////////////////////
+						Highcharts.chart('chart_container', {
+						    chart: {
+						        plotBackgroundColor: null,
+						        plotBorderWidth: null,
+						        plotShadow: false,
+						        type: 'pie'
+						    },
+						    title: {
+						        text: '우리회사 부서별 인원통계'
+						    },
+						    tooltip: {
+						        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+						    },
+						    accessibility: {
+						        point: {
+						            valueSuffix: '%'
+						        }
+						    },
+						    plotOptions: {
+						        pie: {
+						            allowPointSelect: true,
+						            cursor: 'pointer',
+						            dataLabels: {
+						                enabled: true,
+						                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+						            }
+						        }
+						    },
+						    series: [{
+						        name: '인원비율',
+						        colorByPoint: true,
+						        data: resultArr
+						    }]
+						});
+						//////////////////////////////////////////////////////////////////
+						
+						html = "<table>";
+						html += "<tr>" +
+									"<th>부서명</th>" +
+									"<th>인원수</th>" +
+									"<th>퍼센티지</th>" +
+								"</tr>";
+								
+						$.each(json, function(index, item){
+							html += "<tr>" +
+										"<td>" + item.department_name + "</td>" +
+										"<td>" + item.cnt + "</td>" +
+							 			"<td>" + Number(item.percentage) + "</td>" +
+							 		"</tr>";
+						});
+								
+						html += "</table>"
+						
+						$("#table_container").html(html);
+					},
+					error: function(request, status, error){
+						alert("code: "+request.status+"\n"+"message: "+request.responseText+"\n"+"error: "+error);
+					}
+				});
+				break;
+			case "gender":	// 성별 인원통게 선택시
+				$.ajax({
+					url:"/board/chart/genderJSON.action",
+					dataType:"JSON",
+					success:function(json) {
+						$("#chart_container").empty();
+						
+						var resultArr = [];
+						
+						for(var i=0; i<json.length; i++) {
+							var obj;
+							if(json[i].gender == "남") {
+								obj = {name: json[i].gender,
+									   y: Number(json[i].percentage),
+									   sliced: true,
+									   selected: true};
+							}
+							else {
+								obj = {name: json[i].gender,
+									   y: Number(json[i].percentage)};
+							}
+							
+							resultArr.push(obj); // 배열속에 객체를 넣기
+						} // end of for(var i=0; i<json.length; i++)
+						
+						//////////////////////////////////////////////////////////////////
+						Highcharts.chart('chart_container', {
+						    chart: {
+						        plotBackgroundColor: null,
+						        plotBorderWidth: null,
+						        plotShadow: false,
+						        type: 'pie'
+						    },
+						    title: {
+						        text: '우리회사 성별 인원통계'
+						    },
+						    tooltip: {
+						        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+						    },
+						    accessibility: {
+						        point: {
+						            valueSuffix: '%'
+						        }
+						    },
+						    plotOptions: {
+						        pie: {
+						            allowPointSelect: true,
+						            cursor: 'pointer',
+						            dataLabels: {
+						                enabled: true,
+						                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+						            }
+						        }
+						    },
+						    series: [{
+						        name: '성비율',
+						        colorByPoint: true,
+						        data: resultArr
+						    }]
+						});
+						//////////////////////////////////////////////////////////////////
+						
+						html = "<table>";
+						html += "<tr>" +
+									"<th>성별</th>" +
+									"<th>인원수</th>" +
+									"<th>퍼센티지</th>" +
+								"</tr>";
+								
+						$.each(json, function(index, item){
+							html += "<tr>" +
+										"<td>" + item.gender + "</td>" +
+										"<td>" + item.cnt + "</td>" +
+							 			"<td>" + Number(item.percentage) + "</td>" +
+							 		"</tr>";
+						});
+								
+						html += "</table>"
+						
+						$("#table_container").html(html);
+					},
+					error: function(request, status, error){
+						alert("code: "+request.status+"\n"+"message: "+request.responseText+"\n"+"error: "+error);
+					}
+				});
+				break;
+			case "deptnameGender":	// 부서별 성별 인원통계 선택시
+				break;
+		} // end of switch
+		
+	} // end of function func_choice()
 </script>

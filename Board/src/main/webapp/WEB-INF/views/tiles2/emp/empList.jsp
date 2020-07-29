@@ -88,7 +88,35 @@
 	   }
 	   /// === 성별 유지시키기 끝=== ///
 	   
-	});
+	   ///// Excel 파일로 다운받기 /////
+	   $("#btnExcel").click(function(){
+		   var arrDeptId = new Array();
+		   
+		   $("input:checkbox[name=deptId]").each(function(){
+			   var bool = $(this).is(":checked"); // 체크박스의 체크유무 검사
+			   if(bool == true) {
+				   // 체크박스에 체크가 되었으면
+				   arrDeptId.push($(this).val());
+			   }
+		   });
+		   
+		   var sDeptIdes = arrDeptId.join();
+		   // console.log("~~~~~ 확인용 sDeptIdes => " + sDeptIdes);
+		   /*
+		      ~~~~~ 확인용 sDeptIdes => -9999,50,110
+		      ~~~~~ 확인용 sDeptIdes => 
+              ~~~~~ 확인용 sDeptIdes => 10,30,50,80,110
+		   */
+		   
+		   var frm = document.searchFrm;
+		   frm.sDeptIdes.value = sDeptIdes;
+		   
+		   frm.method = "POST";
+		   frm.action = "/board/excel/downloadExcelFile.action";
+		   frm.submit();
+	   });
+	   
+	}); // end of $(document).ready(function()
 </script>
 
 <div id="mycontainer" align="center">
@@ -108,6 +136,7 @@
 			<option>여</option>
 		</select>
 		<button type="button" id="btnSearch">검색</button>
+		<button type="button" id="btnExcel">Excel파일로저장</button>
 	</form>
 	
 	<br/>
