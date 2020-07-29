@@ -239,9 +239,12 @@
     :  jai_codec.jar, jai_core.jar 파일 Maven dependency
 
     <repository>
-        <id>geotools</id>
-        <url>http://download.osgeo.org/webdav/geotools/</url>
-    </repository>
+	    <id>osgeo</id>
+	    <name>OSGeo Release Repository</name>
+	    <url>https://repo.osgeo.org/repository/release/</url>
+	    <snapshots><enabled>false</enabled></snapshots>
+	    <releases><enabled>true</enabled></releases>
+	</repository
 
     <dependency>
         <groupId>javax.media</groupId>

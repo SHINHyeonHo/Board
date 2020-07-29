@@ -34,6 +34,10 @@
 		
 	//	goReadComment();	// 페이징처리 안한 댓글 읽어오기 
 		goViewComment("1"); // 페이징처리 한 댓글 읽어오기
+
+		/* if(typeof "2" == "string") {
+			alert("호호호");
+		} */
 		
 	}); // end of $(document).ready(function(){})----------------
 	
@@ -154,7 +158,105 @@
 			type:"GET",
 			dataType:"JSON",
 			success:function(json) {
-				console.log(json.totalPage);
+				// console.log(json.totalPage);
+				if(json.totalPage > 0) {
+					// 댓글이 있는 경우
+					
+					var totalPage = json.totalPage;
+					
+					var pageBarHTML = "<ul style='list-style: none;'>";
+					
+					var blockSize = 10;
+					// blockSize 는 1개 블럭(토막)당 보여지는 페이지번호의 개수 이다.
+					/*
+					      1 2 3 4 5 6 7 8 9 10  다음                   -- 1개블럭
+					   이전  11 12 13 14 15 16 17 18 19 20  다음   -- 1개블럭
+					   이전  21 22 23
+					*/
+					
+					var loop = 1;
+					/*
+					    loop는 1부터 증가하여 1개 블럭을 이루는 페이지번호의 개수[ 지금은 10개(== blockSize) ] 까지만 증가하는 용도이다.
+					*/
+					
+					if(typeof currentShowPageNo == "string") {
+						currentShowPageNo = Number(currentShowPageNo);
+					}
+					
+					var pageNo = Math.floor((currentShowPageNo - 1)/blockSize) * blockSize + 1;
+					/*
+								(2 - 1)/10	1/10 ==> Math.floor(0.1) ==> 0    
+					*/
+					
+					
+				/*
+				    1  2  3  4  5  6  7  8  9  10  -- 첫번째 블럭의 페이지번호 시작값(pageNo)은 1 이다.
+				    11 12 13 14 15 16 17 18 19 20  -- 두번째 블럭의 페이지번호 시작값(pageNo)은 11 이다.
+				    21 22 23 24 25 26 27 28 29 30  -- 세번째 블럭의 페이지번호 시작값(pageNo)은 21 이다.
+				    
+				    currentShowPageNo         pageNo
+				   ----------------------------------
+				         1                      1 = ((1 - 1)/10) * 10 + 1
+				         2                      1 = ((2 - 1)/10) * 10 + 1
+				         3                      1 = ((3 - 1)/10) * 10 + 1
+				         4                      1
+				         5                      1
+				         6                      1
+				         7                      1 
+				         8                      1
+				         9                      1
+				         10                     1 = ((10 - 1)/10) * 10 + 1
+				        
+				         11                    11 = ((11 - 1)/10) * 10 + 1
+				         12                    11 = ((12 - 1)/10) * 10 + 1
+				         13                    11 = ((13 - 1)/10) * 10 + 1
+				         14                    11
+				         15                    11
+				         16                    11
+				         17                    11
+				         18                    11 
+				         19                    11 
+				         20                    11 = ((20 - 1)/10) * 10 + 1
+				         
+				         21                    21 = ((21 - 1)/10) * 10 + 1
+				         22                    21 = ((22 - 1)/10) * 10 + 1
+				         23                    21 = ((23 - 1)/10) * 10 + 1
+				         ..                    ..
+				         29                    21
+				         30                    21 = ((30 - 1)/10) * 10 + 1
+				*/
+				}
+				
+				// === [이전] 만들기 === 
+				if(pageNo != 1) {
+					pageBarHTML += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='javascript:goViewComment(\""+pageNo-1+"\")'>[이전]</a></li>";
+				}
+				
+				while( !(loop > blockSize || pageNo > totalPage) ) {
+					
+					if(pageNo == currentShowPageNo) {
+						pageBarHTML += "<li style='display:inline-block; width:30px; font-size:12pt; border:solid 1px gray; color:red; padding:2px 4px;'>"+pageNo+"</li>";
+					}
+					else {
+						pageBarHTML += "<li style='display:inline-block; width:30px; font-size:12pt;'><a href='javascript:goViewComment(\""+pageNo+"\")'>"+pageNo+"</a></li>";
+					}
+					
+					loop++;
+					pageNo++;
+					
+				}// end of while------------------------------
+				
+				
+				// === [다음] 만들기 ===
+				if( !(pageNo > totalPage) ) {
+					pageBarHTML += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='javascript:goViewComment(\""+pageNo+"\")'>[다음]</a></li>";
+				}
+				
+				pageBar += "</ul>";
+				
+				$("#pageBar").html(pageBarHTML);
+				pageBarHTML = "";
+				
 			},
 			error: function(request, status, error){
 				alert("code: "+request.status+"\n"+"message: "+request.responseText+"\n"+"error: "+error);
@@ -201,6 +303,26 @@
 			<th>날짜</th>
 			<td>${boardvo.regDate}</td>
 		</tr>
+		
+		<!-- === #158. 첨부파일 및 파일크기가 있으면 알려준다.  -->
+		<tr>
+			<th>첨부파일</th>
+			<td>
+				<c:if test="${not empty sessionScope.loginuser}">
+					<a href="<%= request.getContextPath()%>/download.action?seq=${boardvo.seq}">${boardvo.orgFilename}</a>
+				</c:if>
+				
+				<c:if test="${empty sessionScope.loginuser}">
+					${boardvo.orgFilename}
+				</c:if>
+			</td>
+		</tr>
+		<tr>
+			<th>파일사이즈</th>
+			<td>
+				${boardvo.fileSize}
+			</td>
+		</tr>
 	</table>
 	
 	<br/>
@@ -214,6 +336,11 @@
 	<button type="button" onclick="javascript:location.href='<%= request.getContextPath()%>/${gobackURL }'">목록보기</button>
 	<button type="button" onclick="javascript:location.href='<%= request.getContextPath()%>/edit.action?seq=${boardvo.seq}'">수정</button>
 	<button type="button" onclick="javascript:location.href='<%= request.getContextPath()%>/del.action?seq=${boardvo.seq}'">삭제</button>
+	
+	<!-- // === #136. 어떤 글에 대한 답변 글쓰기는 로그인 되어진 회원의 gradelevel 값이 10 인 회원만('admin', 'seoyh') 가능하도록 하겠다.  -->
+	<c:if test="${sessionScope.loginuser.gradelevel == 10}">
+		<button type="button" onclick="javascript:location.href='<%= request.getContextPath()%>/add.action?fk_seq=${boardvo.seq}&groupno=${boardvo.groupno}&depthno=${boardvo.depthno}'">답변글쓰기</button>
+	</c:if>
 	
 	<!-- === #83. 댓글쓰기 폼 추가 === -->
 	<c:if test="${not empty sessionScope.loginuser}">
@@ -247,6 +374,9 @@
 		</thead>
 		<tbody id="commentDisplay"></tbody>
 	</table>
+	
+	<!-- ===== #134. 댓글 페이지바 ===== -->
+	<div id="pageBar" style="border: solid 0px gray; width: 70%; margin: 25px auto; padding-left: 150px;"></div>
 	
 </div>
 

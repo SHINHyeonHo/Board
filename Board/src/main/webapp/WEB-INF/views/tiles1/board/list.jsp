@@ -153,6 +153,9 @@
 			<th style="width: 70px;  text-align: center;">성명</th>
 			<th style="width: 180px; text-align: center;">날짜</th>
 			<th style="width: 70px;  text-align: center;">조회수</th>
+			
+			<%-- ===#155. 첨부파일이 있는지 없는지 보여주자 --%>
+			<th style="width: 70px;  text-align: center;">첨부파일</th>
 		</tr>	
 		<c:forEach var="boardvo" items="${boardList}" varStatus="status">
 			<tr>
@@ -162,7 +165,8 @@
 				    <%-- <span class="subject" onclick="goView('${boardvo.seq}')">${boardvo.subject}</span> --%>
 				    <%-- === 댓글쓰기가 있는 게시판 끝 === --%>
 				    
-				    <%-- === 댓글쓰기가 있는 게시판 시작 === --%>
+				    
+				    <%-- === 댓글쓰기가 있는 게시판 시작 ===
 				    <c:if test="${boardvo.commentCount > 0}">
 						<span class="subject" onclick="goView('${boardvo.seq}')">${boardvo.subject}&nbsp;<span style="vertical-align: super;">[<span style="color:red; font-size:9pt; font-style:italic; font-weight:bold;">${boardvo.commentCount}</span>]</span></span>
 					</c:if>
@@ -170,11 +174,41 @@
 					<c:if test="${boardvo.commentCount == 0}">
 						<span class="subject" onclick="goView('${boardvo.seq}')">${boardvo.subject}</span>
 					</c:if> 
-					<%-- === 댓글쓰기가 있는 게시판 끝 === --%>
+					 === 댓글쓰기가 있는 게시판 끝 === --%>
+					 
+					 
+					<%-- === 댓글쓰기 및 답변형 글쓰기 게시판 시작 === --%>
+					<%-- 답변글이 아닌 원글인 경우 --%>
+					<c:if test="${boardvo.depthno == 0}">
+					    <c:if test="${boardvo.commentCount > 0}">
+							<span class="subject" onclick="goView('${boardvo.seq}')">${boardvo.subject}&nbsp;<span style="vertical-align: super;">[<span style="color:red; font-size:9pt; font-style:italic; font-weight:bold;">${boardvo.commentCount}</span>]</span></span>
+						</c:if>
+						<c:if test="${boardvo.commentCount == 0}">
+							<span class="subject" onclick="goView('${boardvo.seq}')">${boardvo.subject}</span>
+						</c:if>
+					</c:if>
+					
+					<c:if test="${boardvo.depthno != 0}">
+						<c:if test="${boardvo.commentCount > 0}">
+							<span class="subject" onclick="goView('${boardvo.seq}')"><span style="color: red; font-style: italic; font-size: 8pt; padding-left: ${boardvo.depthno*20}px;">└ RE : </span>${boardvo.subject}&nbsp;<span style="vertical-align: super;">[<span style="color:red; font-size:9pt; font-style:italic; font-weight:bold;">${boardvo.commentCount}</span>]</span></span>
+						</c:if>
+						<c:if test="${boardvo.commentCount == 0}">
+							<span class="subject" onclick="goView('${boardvo.seq}')"><span style="color: red; font-style: italic; font-size: 8pt; padding-left: ${boardvo.depthno*20}px;">└ RE : </span>${boardvo.subject}</span>
+						</c:if>
+					</c:if> 
+					<%-- === 댓글쓰기 및 답변형 게시판 끝 === --%>
 				</td>
 				<td align="center">${boardvo.name}</td>
 				<td align="center">${boardvo.regDate}</td>
 				<td align="center">${boardvo.readCount}</td>
+
+				<%-- ===#155. 첨부파일이 있는지 없는지 보여주자 --%>
+				<td align="center">
+					<c:if test="${boardvo.fileName != null}">
+						<img src="<%= ctxPath%>/resources/images/disk.gif" />
+					</c:if>	
+				</td>
+				
 		</c:forEach>
 	</table>
 	

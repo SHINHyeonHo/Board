@@ -113,22 +113,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class TestScheduler {
 	
-	@Scheduled(cron="0 13 * * * *")
-	public void testSchedule() {
-		// <주의> 스케줄러로 사용되어지는 메소드는 반드시 파라미터가 없어야 한다.!!!!!!!
-		
-		// !!!! == 특정 사이트의 웹페이지를 보여주기 위해 기본브라우저를 뛰운다. == !!!! 
-		// 조심할 것은 http:// 를 주소에 꼭 붙여야 한다.
-		// 즉, 특정 사이트 웹페이지를 실행시키는 것이다.
-		try { 
-			Desktop.getDesktop().browse(new URI("http://localhost:9090/board/alarmTest.action")); 
-			// WAS 컴퓨터에서만 특정 웹페이지를 실행시켜주는 것이지, WAS에 접속한 다른 클라이언트 컴퓨터에서는 특정 웹사이트를 실행시켜주지 않는다.
-		} catch (IOException e) { 
-			e.printStackTrace(); 
-		} catch (URISyntaxException e) {
-			e.printStackTrace(); 
-		}
-		
-	}
+//	@Scheduled(cron="0 13 * * * *")
+//	public void testSchedule() {
+//		// <주의> 스케줄러로 사용되어지는 메소드는 반드시 파라미터가 없어야 한다.!!!!!!!
+//		
+//		// !!!! == 특정 사이트의 웹페이지를 보여주기 위해 기본브라우저를 뛰운다. == !!!! 
+//		// 조심할 것은 http:// 를 주소에 꼭 붙여야 한다.
+//		// 즉, 특정 사이트 웹페이지를 실행시키는 것이다.
+//		try { 
+//			Desktop.getDesktop().browse(new URI("http://localhost:9090/board/alarmTest.action")); 
+//			// WAS 컴퓨터에서만 특정 웹페이지를 실행시켜주는 것이지, WAS에 접속한 다른 클라이언트 컴퓨터에서는 특정 웹사이트를 실행시켜주지 않는다.
+//		} catch (IOException e) { 
+//			e.printStackTrace(); 
+//		} catch (URISyntaxException e) {
+//			e.printStackTrace(); 
+//		}
+//		
+//	}
 		
 }

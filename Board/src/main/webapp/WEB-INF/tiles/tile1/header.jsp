@@ -66,16 +66,25 @@
 		<li class="dropdown"><a class="dropdown-toggle"
 			data-toggle="dropdown" href="#">제품등록(다중파일첨부) <span class="caret"></span></a>
 			<ul class="dropdown-menu">
-			    <li><a href="<%=ctxPath%>/product/addProduct.action">제품등록</a></li>
+			    <li><a href="<%=ctxPath%>/product/addProduct.action"></a></li>
 				<li><a href="<%=ctxPath%>/product/storeProduct.action">제품입고</a></li>
 			</ul></li>
 		</c:if>
 		
 		<li class="dropdown"><a class="dropdown-toggle"
+			data-toggle="dropdown" href="#">인사관리 <span class="caret"></span></a>
+			<ul class="dropdown-menu">
+				<li><a href="<%=ctxPath%>/emp/empList.action">직원목록</a></li>
+				<li><a href="<%=ctxPath%>/emp/chart.action">통계차트</a></li>
+			</ul>
+		</li>
+		
+		<li class="dropdown"><a class="dropdown-toggle"
 			data-toggle="dropdown" href="#">제품정보 <span class="caret"></span></a>
 			<ul class="dropdown-menu">
 				<li><a href="<%=ctxPath%>/product/listProduct.action">제품목록</a></li>
-			</ul></li>
+			</ul>
+		</li>
 	
 	
 	<!-- === #49. 로그인이 성공되어지면 로그인되어진 사용자의 이메일 주소를 출력하기 === -->
