@@ -8,15 +8,15 @@
 <%
 	String ctxPath = request.getContextPath();
 
-	// === #158. (웹채팅관련3) === 
-	// === 서버 IP 주소 알아오기   ===
+	// === #165. (웹채팅관련3) === 
+	// === 서버 IP 주소 알아오기 (사용중인 IP주소가 유동IP 이라면 IP주소를 알아와야 한다.) ===
 	InetAddress inet = InetAddress.getLocalHost(); 
 	String serverIP = inet.getHostAddress();
 	
 	//System.out.println("serverIP : " + serverIP);
 	// serverIP : 192.168.56.50
 	
-	serverIP = "192.168.50.50";
+	// serverIP = "192.168.50.50"; 만약에 사용중인 IP주소가 고정IP 이라면 IP주소를 직접입력해주면 된다.
 	
 	// === 서버 포트번호 알아오기   ===
 	int portnumber = request.getServerPort();

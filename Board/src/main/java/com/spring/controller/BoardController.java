@@ -1430,6 +1430,13 @@ public class BoardController {
 	   
    } // end of public void multiplePhotoUpload(HttpServletRequest request, HttpServletResponse response)
    
+   //=== #166. (웹채팅관련4) ===
+   @RequestMapping(value="/chatting/multichat.action", method= {RequestMethod.GET}) 
+   public String requiredLogin_multichat(HttpServletRequest request, HttpServletResponse response) { 
+	   return "chatting/multichat.tiles1";
+   }
+
+   
 }
 
 
