@@ -1436,6 +1436,12 @@ public class BoardController {
 	   return "chatting/multichat.tiles1";
    }
 
+   // 예매하기를 누르면 팝업이 뜬다.
+   @RequestMapping(value="/payPopUp.action")
+   public String payPopUp() {
+	   
+	   return "seat.notiles";
+   }
    
 }
 
